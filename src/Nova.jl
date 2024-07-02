@@ -1,5 +1,7 @@
 module Nova
 
-# Write your package code here.
+include("LinearModel.jl")
+
+export LinearModel
 
 end
