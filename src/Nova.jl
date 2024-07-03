@@ -1,7 +1,8 @@
 module Nova
 
 include("LinearModel.jl")
+include("ModelSelection.jl")
 
-export LinearModel
+export LinearModel, ModelSelection
 
 end

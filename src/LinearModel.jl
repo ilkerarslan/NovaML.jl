@@ -10,7 +10,7 @@ abstract type AbstractModel end
 """Linear activation function"""
 linearactivation(X) = X
 
-# Common methods 
+# Common methods
 """Calculate net input"""
 net_input(m::AbstractModel, x::AbstractVector) = x'*m.w + m.b
 net_input(m::AbstractModel, X::AbstractMatrix) = X * m.w .+ m.b
