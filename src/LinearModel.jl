@@ -298,62 +298,38 @@ function LogisticRegression(; η=0.01, num_iter=50, random_state=nothing, optim_
 end
 
 """Predict class label for a single sample"""
-(m::LogisticRegression)(x::AbstractVector) = sigmoid(dot(m.w, x) + m.b) ≥ 0.5 ? 1 : 0
+(m::LogisticRegression)(x::AbstractVector) = sigmoid(net_input(m, x)) ≥ 0.5 ? 1 : 0
 
 """Predict class labels for multiple samples"""
 (m::LogisticRegression)(X::AbstractMatrix) = [m(x) for x in eachrow(X)]
 
 """Logistic Regression training"""
 function (m::LogisticRegression)(X::AbstractMatrix, y::AbstractVector)
-    if !m.fitted
-        # Initialize weights and bias
-        m.w = zeros(size(X, 2)) ./ 0.01
-        m.b = 0.0
-    end
-    
-    empty!(m.losses)
-    
-    if m.random_state !== nothing
-        Random.seed!(m.random_state)
-    end
-
-    n_samples, n_features = size(X)
-    
-    for _ in ProgressBar(1:m.num_iter)
-        if m.optim_alg == :SGD
-            for i in 1:n_samples
-                xi, yi = X[i,:], y[i]
-                ŷi = sigmoid(dot(m.w, xi) + m.b)
-                error = yi - ŷi
-                m.w .+= m.η * error * xi
-                m.b += m.η * error
-            end
-        elseif m.optim_alg == :Batch
-            ŷ = sigmoid.(X * m.w .+ m.b)
-            errors = y .- ŷ
-            m.w .+= m.η * X' * errors / n_samples
-            m.b += m.η * sum(errors) / n_samples
-        elseif m.optim_alg == :MiniBatch
-            for batch_start in 1:m.batch_size:n_samples
-                batch_end = min(batch_start + m.batch_size - 1, n_samples)
-                X_batch = X[batch_start:batch_end, :]
-                y_batch = y[batch_start:batch_end]
-                ŷ_batch = sigmoid.(X_batch * m.w .+ m.b)
-                errors = y_batch .- ŷ_batch
-                m.w .+= m.η * X_batch' * errors / length(y_batch)
-                m.b += m.η * sum(errors) / length(y_batch)
-            end
+    if m.optim_alg == :SGD 
+        println("SGD algorithm for Logistic Regression hasn't been implemented yet.")
+    elseif m.optim_alg == :Batch
+        if m.random_state !== nothing
+            Random.seed!(m.random_state)
         end
-        
-        # Calculate loss
-        ŷ = sigmoid.(X * m.w .+ m.b)
-        loss = -mean(y .* log.(ŷ .+ eps()) .+ (1 .- y) .* log.(1 .- ŷ .+ eps()))
-        push!(m.losses, loss)
-    end
+        empty!(m.losses)    
+        # Initialize weights
+        m.w = randn(size(X, 2)) ./ 100
+        n_samples, _ = size(X)
 
-    m.fitted = true
-    return m
+        for _ in ProgressBar(1:m.num_iter)
+            ŷ = sigmoid(net_input(m, X))
+            errors = y .- ŷ
+            m.w .+= m.η .* X' * errors ./ n_samples
+            m.b += m.η .* sum(errors) / n_samples
+            loss = -mean(y .* log.(ŷ .+ eps()) .+ (1 .- y) .* log.(1 .- ŷ .+ eps()))
+            push!(m.losses, loss)
+        end
+        m.fitted = true
+    elseif m.optim_alg == :MiniBatch
+        println("MiniBatch algorithm for Logistic Regression hasn't been implemented yet.")
+    end
 end
+
 
 # Helper functions
 sigmoid(z::Real) = 1 / (1 + exp(-z))
