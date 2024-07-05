@@ -2,24 +2,40 @@ module LinearModel
 
 using Random, Statistics, ProgressBars
 
-export Perceptron, Adaline, MulticlassPerceptron, LogisticRegression
+export Perceptron, Adaline, MulticlassPerceptron
+export LogisticRegression, MultinomialLogisticRegression
 
 abstract type AbstractModel end
+abstract type AbstractMultiClass <: AbstractModel end
 
 # Activation functions
 """Linear activation function"""
 linearactivation(X) = X
+"""Sigmoid activation function for scalar value"""
+sigmoid(z::Real) = 1 / (1 + exp(-z))
+"""Sigmoid activation function for an array"""
+sigmoid(z::AbstractArray) = 1 ./ (1 .+ exp.(-z))
 
 """Compute logistic sigmoid activation"""
 sigmoid(z) = 1. / (1. + exp(-1*clamp(z, -250, 250)))
 
 # Common methods
-"""Calculate net input"""
+"""Calculate net input for AbstractModel"""
 net_input(m::AbstractModel, x::AbstractVector) = x'*m.w + m.b
 net_input(m::AbstractModel, X::AbstractMatrix) = X * m.w .+ m.b
+# net_input for MulticlassPerceptron
+"""Calculate net input for AbstractMultiClass"""
+net_input(m::AbstractMultiClass, x::AbstractVector) = m.W' * x .+ m.b
+net_input(m::AbstractMultiClass, X::AbstractMatrix) = X * m.W .+ m.b'
 
 """AbstractModel batch prediction"""
 (m::AbstractModel)(X::AbstractMatrix) = [m(x) for x in eachrow(X)]
+
+#Softmax function for probability distribution
+function softmax(X::AbstractMatrix)
+    exp_X = exp.(X .- maximum(X, dims=2))
+    return exp_X ./ sum(exp_X, dims=2)
+end
 
 ########################################################
 # Perceptron
@@ -169,7 +185,7 @@ end
 
 ########################################################################
 # MulticlassPerceptron
-mutable struct MulticlassPerceptron <: AbstractModel
+mutable struct MulticlassPerceptron <: AbstractMultiClass
     # Parameters
     W::Matrix{Float64}
     b::Vector{Float64}
@@ -195,11 +211,6 @@ function MulticlassPerceptron(; η=0.01, num_iter=100, random_state=nothing,
                                     random_state, optim_alg, batch_size)
     end
 end
-
-# net_input for MulticlassPerceptron
-"""Calculate net input"""
-net_input(m::MulticlassPerceptron, x::AbstractVector) = m.W' * x .+ m.b
-net_input(m::MulticlassPerceptron, X::AbstractMatrix) = X * m.W .+ m.b'
 
 # Model training
 """Multiclass Perceptron training model"""
@@ -287,13 +298,14 @@ mutable struct LogisticRegression <: AbstractModel
     random_state::Union{Int, Nothing}
     optim_alg::Symbol 
     batch_size::Int
+    λ::Float64  # PArameter for regularization
 end
 
-function LogisticRegression(; η=0.01, num_iter=50, random_state=nothing, optim_alg=:SGD, batch_size=32)
+function LogisticRegression(; η=0.01, num_iter=50, random_state=nothing, optim_alg=:SGD, batch_size=32, λ=0.01)
     if !(optim_alg ∈ [:SGD, :Batch, :MiniBatch])
         throw(ArgumentError("`optim_alg` should be in [:SGD, :Batch, :MiniBatch]"))
     else
-        return LogisticRegression(Float64[], 0.0, Float64[], false, η, num_iter, random_state, optim_alg, batch_size)
+        return LogisticRegression(Float64[], 0.0, Float64[], false, η, num_iter, random_state, optim_alg, batch_size, λ)
     end
 end
 
@@ -305,35 +317,58 @@ end
 
 """Logistic Regression training"""
 function (m::LogisticRegression)(X::AbstractMatrix, y::AbstractVector)
-    if m.optim_alg == :SGD 
-        println("SGD algorithm for Logistic Regression hasn't been implemented yet.")
-    elseif m.optim_alg == :Batch
-        if m.random_state !== nothing
-            Random.seed!(m.random_state)
-        end
-        empty!(m.losses)    
-        # Initialize weights
-        m.w = randn(size(X, 2)) ./ 100
-        n_samples, _ = size(X)
+    if m.random_state !== nothing
+        Random.seed!(m.random_state)
+    end
+    empty!(m.losses)    
+    # Initialize weights
+    m.w = randn(size(X, 2)) ./ 100
+    m.b = 0.0
+    n_samples, n_features = size(X)
 
+    if m.optim_alg == :Batch
         for _ in ProgressBar(1:m.num_iter)
-            ŷ = sigmoid(net_input(m, X))
-            errors = y .- ŷ
-            m.w .+= m.η .* X' * errors ./ n_samples
+            ŷ = sigmoid.(net_input(m, X))
+            errors = y .- ŷ
+            m.w .+= m.η .* (X' * errors .- m.λ .* m.w) ./ n_samples
             m.b += m.η .* sum(errors) / n_samples
-            loss = -mean(y .* log.(ŷ .+ eps()) .+ (1 .- y) .* log.(1 .- ŷ .+ eps()))
+            loss = -mean(y .* log.(ŷ .+ eps()) .+ (1 .- y) .* log.(1 .- ŷ .+ eps())) + 0.5 * m.λ * sum(m.w .^ 2)
             push!(m.losses, loss)
         end
-        m.fitted = true
+    elseif m.optim_alg == :SGD
+        for _ in ProgressBar(1:m.num_iter)
+            for i in 1:n_samples
+                xi, yi = X[i, :], y[i]
+                ŷi = sigmoid(net_input(m, xi))
+                error = yi - ŷi
+                m.w .+= m.η .* (error .* xi .- m.λ .* m.w)
+                m.b += m.η * error
+            end
+            ŷ = sigmoid.(net_input(m, X))
+            loss = -mean(y .* log.(ŷ .+ eps()) .+ (1 .- y) .* log.(1 .- ŷ .+ eps())) + 0.5 * m.λ * sum(m.w .^ 2)
+            push!(m.losses, loss)
+        end
     elseif m.optim_alg == :MiniBatch
-        println("MiniBatch algorithm for Logistic Regression hasn't been implemented yet.")
+        for _ in ProgressBar(1:m.num_iter)
+            shuffle_indices = Random.shuffle(1:n_samples)
+            for batch_start in 1:m.batch_size:n_samples
+                batch_end = min(batch_start + m.batch_size - 1, n_samples)
+                batch_indices = shuffle_indices[batch_start:batch_end]
+                X_batch = X[batch_indices, :]
+                y_batch = y[batch_indices]
+                
+                ŷ_batch = sigmoid.(net_input(m, X_batch))
+                errors = y_batch .- ŷ_batch
+                m.w .+= m.η .* (X_batch' * errors .- m.λ .* m.w) ./ length(batch_indices)
+                m.b += m.η .* sum(errors) / length(batch_indices)
+            end
+            ŷ = sigmoid.(net_input(m, X))
+            loss = -mean(y .* log.(ŷ .+ eps()) .+ (1 .- y) .* log.(1 .- ŷ .+ eps())) + 0.5 * m.λ * sum(m.w .^ 2)
+            push!(m.losses, loss)
+        end
     end
+    m.fitted = true
 end
-
-
-# Helper functions
-sigmoid(z::Real) = 1 / (1 + exp(-z))
-sigmoid(z::AbstractArray) = 1 ./ (1 .+ exp.(-z))
 
 
 end # of module LinearModel
