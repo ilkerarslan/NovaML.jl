@@ -1,10 +1,11 @@
 module PreProcessing
     
 using Statistics
+import ..Nova: AbstractScaler
+
 
 export StandardScaler
 
-abstract type AbstractScaler end
 
 mutable struct StandardScaler <: AbstractScaler 
     mean::Vector{Float64}

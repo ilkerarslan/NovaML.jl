@@ -1,6 +1,8 @@
 module MultiClass
 
 using ..LinearModel 
+import ..Nova: sigmoid, net_input
+
 
 export OneVsRestClassifier
 
@@ -11,7 +13,7 @@ mutable struct OneVsRestClassifier
     fitted::Bool
 end
 
-function OneVsRestClassifier(; η=0.01, random_state=nothing, optim_alg=:Batch, batch_size=32, λ=0.01)
+function OneVsRestClassifier(; η=0.01, num_iter=100, random_state=nothing, optim_alg=:Batch, batch_size=32, λ=0.01)
     base_estimator = LogisticRegression(η=η, num_iter=num_iter, random_state=random_state, 
                                         optim_alg=optim_alg, batch_size=batch_size, λ=λ)
 
@@ -30,7 +32,7 @@ function (m::OneVsRestClassifier)(X::AbstractMatrix, y::AbstractVector)
     m.fitted = true
 end
 
-function (m::OneVsRestClassifier)(X::AbstractMatrix)
+function (m::OneVsRestClassifier)(X::AbstractMatrix; type=nothing)
     if !m.fitted
         error("Model is not fitted yet.")
     end
@@ -43,8 +45,12 @@ function (m::OneVsRestClassifier)(X::AbstractMatrix)
         scores[:, i] = sigmoid.(net_input(classifier, X))
     end
 
-    _, predicted_indices = findmax(scores, dims=2)
-    return [m.classes[idx[2]] for idx in predicted_indices]
+    if type ≡ nothing 
+        _, predicted_indices = findmax(scores, dims=2)
+        return [m.classes[idx[2]] for idx in predicted_indices] |> vec
+    elseif type == :probs 
+        return scores
+    end
 end
 
 
