@@ -1,7 +1,7 @@
 name = "Nova"
 uuid = "3f482e55-661e-4eec-8a53-436578a72954"
 authors = ["ilkerarslan <ilker.arslan@outlook.com> and contributors"]
-version = "1.0.0-DEV"
+version = "0.0.1-DEV"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
