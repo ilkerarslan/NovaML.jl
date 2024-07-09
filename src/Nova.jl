@@ -12,13 +12,13 @@ include("LinearModel/LinearModel.jl")
 include("MultiClass.jl")
 include("Neighbors/Neighbors.jl")
 
+export Tree, Ensemble, LinearModel, MultiClass, Neighbors
 
+include("Impute.jl")
 include("Metrics.jl")
 include("ModelSelection.jl")
-include("PreProcessing.jl")
+include("PreProcessing/PreProcessing.jl")
 
-
-export LinearModel, ModelSelection, PreProcessing, Metrics, MultiClass
-export Tree, Ensemble, KNeighborsClassifier
+export Impute, Metrics, ModelSelection, PreProcessing
 
 end

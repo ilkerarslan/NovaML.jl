@@ -10,14 +10,14 @@ export SimpleImputer
 mutable struct SimpleImputer <: AbstractImputer
     strategy::Symbol
     fill_value::Union{Number, String, Nothing}
-    missing_values::Union{Number, String, Missing}
+    missing_values::Any
     imputation_values::Union{Dict{Int, Union{Number, String}}, Nothing}
     fitted::Bool
 
     function SimpleImputer(;
         strategy::Symbol=:mean,
         fill_value::Union{Number, String, Nothing}=nothing,
-        missing_values::Union{Number, String, Missing}=missing
+        missing_values::Any=missing
     )
         if !(strategy in [:mean, :median, :most_frequent, :constant])
             throw(ArgumentError("strategy must be one of :mean, :median, :most_frequent, or :constant"))
@@ -38,7 +38,7 @@ function (imputer::SimpleImputer)(X::AbstractMatrix)
     
         for col in 1:n_features
             column = X[:, col]
-            non_missing = column[column .!= imputer.missing_values]
+            non_missing = filter(!ismissing, column)
     
             if imputer.strategy == :mean
                 imputer.imputation_values[col] = mean(non_missing)
@@ -54,16 +54,16 @@ function (imputer::SimpleImputer)(X::AbstractMatrix)
         imputer.fitted = true
     end
 
-    # Always perform the imputation, whether just fitted or not
     X_imputed = copy(X)
 
     for (col, value) in imputer.imputation_values
-        mask = X[:, col] .== imputer.missing_values
+        mask = ismissing.(X[:, col])
         X_imputed[mask, col] .= value
     end
 
     return X_imputed
 end
+
 
 function Base.show(io::IO, imputer::SimpleImputer)
     println(io, "SimpleImputer(")
