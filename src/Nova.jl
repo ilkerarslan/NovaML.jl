@@ -21,4 +21,7 @@ include("PreProcessing/PreProcessing.jl")
 
 export Impute, Metrics, ModelSelection, PreProcessing
 
+include("Decomposition/Decomposition.jl")
+export Decomposition
+
 end
