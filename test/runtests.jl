@@ -10,18 +10,18 @@ using Nova.LinearModel: Perceptron
             @test p.η == 0.01
             @test p.num_iter == 100
             @test p.random_state === nothing
-            @test p.optim_alg == "SGD"
+            @test p.optim_alg == :SGD
             @test p.batch_size == 32
             @test p.fitted == false
             @test isempty(p.w)
             @test p.b ≤ 0.01 
             @test isempty(p.losses)
     
-            p_custom = Perceptron(η=0.1, num_iter=200, random_state=42, optim_alg="MiniBatch", batch_size=64)
+            p_custom = Perceptron(η=0.1, num_iter=200, random_state=42, optim_alg=:MiniBatch, batch_size=64)
             @test p_custom.η == 0.1
             @test p_custom.num_iter == 200
             @test p_custom.random_state == 42
-            @test p_custom.optim_alg == "MiniBatch"
+            @test p_custom.optim_alg == :MiniBatch
             @test p_custom.batch_size == 64    
             
         end
