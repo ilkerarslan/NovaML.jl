@@ -1,14 +1,3 @@
-"""
-    OneHotEncoder
-
-Encode categorical features as a one-hot numeric array.
-
-# Fields
-- `categories::Vector{Vector}`: List of arrays, each containing the unique categories for a feature
-- `category_maps::Vector{Dict}`: List of dictionaries mapping categories to their encoded indices
-- `n_features::Int`: Number of features
-- `fitted::Bool`: Indicates whether the encoder has been fitted
-"""
 mutable struct OneHotEncoder
     categories::Vector{Vector}
     category_maps::Vector{Dict}
@@ -18,59 +7,33 @@ mutable struct OneHotEncoder
     OneHotEncoder() = new([], [], 0, false)
 end
 
-"""
-    (encoder::OneHotEncoder)(X::Union{AbstractVector, AbstractMatrix})
-
-Fit the OneHotEncoder to the input features.
-
-# Arguments
-- `X::Union{AbstractVector, AbstractMatrix}`: Vector or matrix of features to encode
-
-# Returns
-- The fitted OneHotEncoder object
-"""
 function (encoder::OneHotEncoder)(X::Union{AbstractVector, AbstractMatrix})
-    if X isa AbstractVector
-        X = reshape(X, :, 1)
-    end
     
-    encoder.n_features = size(X, 2)
-    encoder.categories = [unique(sort(X[:, i])) for i in 1:encoder.n_features]
-    encoder.category_maps = [Dict(val => i for (i, val) in enumerate(cats)) for cats in encoder.categories]
-    encoder.fitted = true
-    return encoder
 end
 
-"""
-    (encoder::OneHotEncoder)(X::Union{AbstractVector, AbstractMatrix}, mode::Symbol)
-
-Transform features or inverse transform encoded features.
-
-# Arguments
-- `X::Union{AbstractVector, AbstractMatrix}`: Vector or matrix to transform or inverse transform
-- `mode::Symbol`: Either :transform or :inverse_transform
-
-# Returns
-- Transformed or inverse transformed features
-
-# Throws
-- `ErrorException`: If the encoder hasn't been fitted or if an invalid mode is provided
-"""
 function (encoder::OneHotEncoder)(X::Union{AbstractVector, AbstractMatrix}, mode::Symbol)
-    if !encoder.fitted
-        throw(ErrorException("OneHotEncoder must be fitted before transforming or inverse transforming."))
-    end
-
     if X isa AbstractVector
         X = reshape(X, :, 1)
     end
 
-    if mode == :transform
-        return _transform(encoder, X)
-    elseif mode == :inverse_transform
+    if !encoder.fitted        
+        encoder.n_features = size(X, 2)
+        encoder.categories = [unique(sort(X[:, i])) for i in 1:encoder.n_features]
+        encoder.category_maps = [Dict(val => i for (i, val) in enumerate(cats)) for cats in encoder.categories]
+        encoder.fitted = true
+    end
+    
+    return _transform(encoder, X)
+end
+
+function (encoder::OneHotEncoder)(X::Union{AbstractVector, AbstractMatrix}, mode::Symbol)
+    if mode == :inverse_transform
+        if X isa AbstractVector
+            X = reshape(X, :, 1)
+        end    
         return _inverse_transform(encoder, X)
     else
-        throw(ErrorException("Invalid mode. Use :transform or :inverse_transform."))
+        throw(ErrorException("Mode can be :inverse_transform"))
     end
 end
 
@@ -106,15 +69,6 @@ function _inverse_transform(encoder::OneHotEncoder, X::AbstractMatrix)
     return encoder.n_features == 1 ? vec(result) : result
 end
 
-"""
-    Base.show(io::IO, encoder::OneHotEncoder)
-
-Custom pretty printing for OneHotEncoder.
-
-# Arguments
-- `io::IO`: The I/O stream
-- `encoder::OneHotEncoder`: The OneHotEncoder object to be printed
-"""
 function Base.show(io::IO, encoder::OneHotEncoder)
     fitted_status = encoder.fitted ? "fitted" : "not fitted"
     n_features = encoder.n_features
