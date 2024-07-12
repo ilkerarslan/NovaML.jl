@@ -15,7 +15,6 @@ function (scaler::StandardScaler)(X::Matrix{<:Real})
         scaler.mean = vec(mean(X, dims=1))
         scaler.std = vec(std(X, dims=1))
         scaler.fitted = true
-    else
-        return (X .- scaler.mean') ./ scaler.std'
     end
+    return (X .- scaler.mean') ./ scaler.std'
 end

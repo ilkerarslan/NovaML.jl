@@ -5,23 +5,6 @@ import ...Nova: AbstractModel, net_input, sigmoid
 
 export LogisticRegression
 
-"""
-    LogisticRegression <: AbstractModel
-
-Logistic Regression model for binary classification.
-
-# Fields
-- `w::Vector{Float64}`: Weight vector
-- `b::Float64`: Bias term
-- `losses::Vector{Float64}`: Training losses
-- `fitted::Bool`: Indicates if the model has been fitted
-- `η::Float64`: Learning rate
-- `num_iter::Int`: Number of iterations for training
-- `random_state::Union{Int, Nothing}`: Seed for random number generator
-- `optim_alg::Symbol`: Optimization algorithm (:SGD, :Batch, or :MiniBatch)
-- `batch_size::Int`: Batch size for mini-batch optimization
-- `λ::Float64`: Regularization parameter
-"""
 mutable struct LogisticRegression <: AbstractModel
     # Parameters
     w::Vector{Float64}
@@ -38,22 +21,6 @@ mutable struct LogisticRegression <: AbstractModel
     λ::Float64  # Parameter for regularization
 end
 
-"""
-    LogisticRegression(; η=0.01, num_iter=50, random_state=nothing, optim_alg=:SGD, batch_size=32, λ=0.01)
-
-Constructor for LogisticRegression model.
-
-# Keywords
-- `η::Float64=0.01`: Learning rate
-- `num_iter::Int=50`: Number of iterations for training
-- `random_state::Union{Int, Nothing}=nothing`: Seed for random number generator
-- `optim_alg::Symbol=:SGD`: Optimization algorithm (:SGD, :Batch, or :MiniBatch)
-- `batch_size::Int=32`: Batch size for mini-batch optimization
-- `λ::Float64=0.01`: Regularization parameter
-
-# Returns
-- `LogisticRegression`: Initialized LogisticRegression model
-"""
 function LogisticRegression(; η=0.01, num_iter=50, random_state=nothing, optim_alg=:SGD, batch_size=32, λ=0.01)
     if !(optim_alg ∈ [:SGD, :Batch, :MiniBatch])
         throw(ArgumentError("`optim_alg` should be in [:SGD, :Batch, :MiniBatch]"))
@@ -62,46 +29,10 @@ function LogisticRegression(; η=0.01, num_iter=50, random_state=nothing, optim_
     end
 end
 
-"""
-    (m::LogisticRegression)(x::AbstractVector)
-
-Predict class label for a single sample.
-
-# Arguments
-- `x::AbstractVector`: Input feature vector
-
-# Returns
-- `Int`: Predicted class label (0 or 1)
-"""
 (m::LogisticRegression)(x::AbstractVector) = sigmoid(net_input(m, x)) ≥ 0.5 ? 1 : 0
 
-"""
-    (m::LogisticRegression)(X::AbstractMatrix)
-
-Predict class labels for multiple samples.
-
-# Arguments
-- `X::AbstractMatrix`: Input feature matrix, where each row is a sample
-
-# Returns
-- `Vector{Int}`: Predicted class labels
-"""
 (m::LogisticRegression)(X::AbstractMatrix) = [m(x) for x in eachrow(X)]
 
-"""
-    (m::LogisticRegression)(X::AbstractMatrix, y::AbstractVector)
-
-Train the Logistic Regression model.
-
-# Arguments
-- `X::AbstractMatrix`: Input feature matrix, where each row is a sample
-- `y::AbstractVector`: Target labels
-
-# Effects
-- Updates the model parameters (`w` and `b`)
-- Stores the training losses in `m.losses`
-- Sets `m.fitted` to `true`
-"""
 function (m::LogisticRegression)(X::AbstractMatrix, y::AbstractVector)
     if m.random_state !== nothing
         Random.seed!(m.random_state)
