@@ -44,7 +44,13 @@ accuracy = Metrics.accuracy_score(y_test, y_pred)
 println("Accuracy: ", accuracy)
 ```
 
+## Main Components
+### Preprocessing
 
+- ``StandardScaler``: Standardize features by removing the mean and scaling to unit variance
+- ``MinMaxScaler``: Scale features to a given range
+- ``LabelEncoder``: Encode categorical features as integers
+- ``OneHotEncoder``: Encode categorical features as one-hot vectors
 
 
 [![Build Status](https://github.com/ilkerarslan/Nova.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/ilkerarslan/Nova.jl/actions/workflows/CI.yml?query=branch%3Amaster)
