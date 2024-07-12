@@ -52,5 +52,82 @@ println("Accuracy: ", accuracy)
 - ``LabelEncoder``: Encode categorical features as integers
 - ``OneHotEncoder``: Encode categorical features as one-hot vectors
 
+### Linear Models
+
+- ``LogisticRegression``: Binary and multiclass logistic regression
+- ``Perceptron``: Simple perceptron algorithm
+- ``Adaline``: Adaptive Linear Neuron
+
+### Tree-Based Models
+
+- ``DecisionTreeClassifier``: Decision tree for classification
+
+### Ensemble Methods
+
+- ``RandomForestClassifier``: Random forest classifier
+
+### Neighbors
+
+- ``KNeighborsClassifier``: K-nearest neighbors classifier
+
+### Decomposition
+
+- ``PCA``: Principal Component Analysis
+
+### Model Selection and Evaluation
+
+- ``train_test_split``: Split arrays or matrices into random train and test subsets
+- ``accuracy_score``: Calculate accuracy of classification predictions
+
+### Multiclass Classification
+
+Nova.jl supports multiclass classification using the One-vs-Rest strategy:
+
+```
+using Nova
+
+# Assuming X and y are your multiclass data
+model = MultiClass.OneVsRestClassifier(estimator=LinearModel.LogisticRegression())
+model(X, y)
+
+# Make predictions
+y_pred = model(X_test)
+```
+
+### Ensemble Methods
+
+You can use ensemble methods like Random Forest for improved performance:
+
+```
+using Nova
+
+model = Ensemble.RandomForestClassifier(n_estimators=100, max_depth=5)
+model(X_train, y_train)
+
+y_pred = model(X_test)
+```
+
+### Dimensionality Reduction
+
+Use PCA for dimensionality reduction:
+
+```
+using Nova
+
+pca = Decomposition.PCA(n_components=2)
+X_reduced = pca(X)
+
+# Inverse transform
+X_reconstructed = pca(X_reduced, :inverse_transform)
+```
+
+### Contributing
+
+Contributions to Nova.jl are welcome! Please feel free to submit a Pull Request.
+
+### License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
 
 [![Build Status](https://github.com/ilkerarslan/Nova.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/ilkerarslan/Nova.jl/actions/workflows/CI.yml?query=branch%3Amaster)
