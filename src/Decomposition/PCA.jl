@@ -3,7 +3,6 @@ import Statistics: mean, cov
 
 export PCA
 
-
 mutable struct PCA
     n_components::Union{Int, Float64, String, Nothing}
     whiten::Bool
