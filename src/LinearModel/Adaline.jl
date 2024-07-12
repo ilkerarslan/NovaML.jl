@@ -6,24 +6,6 @@ import ...Nova: AbstractModel, linearactivation, net_input
 export Adaline 
 
 
-"""
-    Adaline <: AbstractModel
-
-Adaptive Linear Neuron (ADALINE) model for binary classification.
-
-# Fields
-- `w::Vector{Float64}`: Weight vector
-- `b::Float64`: Bias term
-- `losses::Vector{Float64}`: Training losses
-- `fitted::Bool`: Indicates if the model has been fitted
-- `η::Float64`: Learning rate
-- `num_iter::Int`: Number of iterations for training
-- `random_state::Union{Nothing, Int64}`: Seed for random number generator
-- `optim_alg::Symbol`: Optimization algorithm (:SGD, :Batch, or :MiniBatch)
-- `batch_size::Int`: Batch size for mini-batch optimization
-- `w_init::Bool`: Indicates if weights have been initialized
-- `shuffle::Bool`: Whether to shuffle data before each epoch
-"""
 mutable struct Adaline <: AbstractModel
     # Parameters
     w::Vector{Float64}
@@ -41,22 +23,7 @@ mutable struct Adaline <: AbstractModel
     shuffle::Bool
 end
 
-"""
-    Adaline(; η=0.01, num_iter=100, random_state=nothing, optim_alg=:SGD, batch_size=32, shuffle=true)
 
-Constructor for Adaline model.
-
-# Keywords
-- `η::Float64=0.01`: Learning rate
-- `num_iter::Int=100`: Number of iterations for training
-- `random_state::Union{Nothing, Int64}=nothing`: Seed for random number generator
-- `optim_alg::Symbol=:SGD`: Optimization algorithm (:SGD, :Batch, or :MiniBatch)
-- `batch_size::Int=32`: Batch size for mini-batch optimization
-- `shuffle::Bool=true`: Whether to shuffle data before each epoch
-
-# Returns
-- `Adaline`: Initialized Adaline model
-"""
 function Adaline(; η=0.01, num_iter=100, random_state=nothing,
             optim_alg=:SGD, batch_size=32, shuffle=true)
     if !(optim_alg ∈ [:SGD, :Batch, :MiniBatch])
@@ -66,34 +33,10 @@ function Adaline(; η=0.01, num_iter=100, random_state=nothing,
     end
 end
 
-"""
-    (m::Adaline)(x::AbstractVector)
 
-Predict class label for a single sample.
-
-# Arguments
-- `x::AbstractVector`: Input feature vector
-
-# Returns
-- `Int`: Predicted class label (0 or 1)
-"""
 (m::Adaline)(x::AbstractVector) = linearactivation(net_input(m, x)) ≥ 0.5 ? 1 : 0
 
-"""
-    (m::Adaline)(X::Matrix, y::Vector; partial=false)
 
-Train the Adaline model.
-
-# Arguments
-- `X::Matrix`: Input feature matrix, where each row is a sample
-- `y::Vector`: Target labels
-- `partial::Bool=false`: If true, perform partial fit (not implemented yet)
-
-# Effects
-- Updates the model parameters (`w` and `b`)
-- Stores the training losses in `m.losses`
-- Sets `m.fitted` to `true`
-"""
 function (m::Adaline)(X::Matrix, y::Vector; partial=false)
     if m.optim_alg == :SGD
         if partial == true

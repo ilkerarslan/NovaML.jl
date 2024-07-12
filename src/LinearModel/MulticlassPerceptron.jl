@@ -6,23 +6,6 @@ import ...Nova: AbstractModel, AbstractMultiClass, net_input
 
 export MulticlassPerceptron
 
-"""
-    MulticlassPerceptron <: AbstractMultiClass
-
-Multiclass Perceptron model for classification tasks with more than two classes.
-
-# Fields
-- `W::Matrix{Float64}`: Weight matrix
-- `b::Vector{Float64}`: Bias vector
-- `losses::Vector{Float64}`: Training losses
-- `fitted::Bool`: Indicates if the model has been fitted
-- `classes::Vector{Any}`: Unique class labels
-- `η::Float64`: Learning rate
-- `num_iter::Int`: Number of iterations for training
-- `random_state::Union{Nothing, Int64}`: Seed for random number generator
-- `optim_alg::Symbol`: Optimization algorithm (:SGD, :Batch, or :MiniBatch)
-- `batch_size::Int`: Batch size for mini-batch optimization
-"""
 mutable struct MulticlassPerceptron <: AbstractMultiClass
     # Parameters
     W::Matrix{Float64}
@@ -39,21 +22,6 @@ mutable struct MulticlassPerceptron <: AbstractMultiClass
     batch_size::Int 
 end
 
-"""
-    MulticlassPerceptron(; η=0.01, num_iter=100, random_state=nothing, optim_alg=:SGD, batch_size=32)
-
-Constructor for MulticlassPerceptron model.
-
-# Keywords
-- `η::Float64=0.01`: Learning rate
-- `num_iter::Int=100`: Number of iterations for training
-- `random_state::Union{Nothing, Int64}=nothing`: Seed for random number generator
-- `optim_alg::Symbol=:SGD`: Optimization algorithm (:SGD, :Batch, or :MiniBatch)
-- `batch_size::Int=32`: Batch size for mini-batch optimization
-
-# Returns
-- `MulticlassPerceptron`: Initialized MulticlassPerceptron model
-"""
 function MulticlassPerceptron(; η=0.01, num_iter=100, random_state=nothing,
             optim_alg=:SGD, batch_size=32)
     if !(optim_alg ∈ [:SGD, :Batch, :MiniBatch])
@@ -65,20 +33,6 @@ function MulticlassPerceptron(; η=0.01, num_iter=100, random_state=nothing,
     end
 end
 
-"""
-    (m::MulticlassPerceptron)(X::Matrix, y::Vector)
-
-Train the MulticlassPerceptron model.
-
-# Arguments
-- `X::Matrix`: Input feature matrix, where each row is a sample
-- `y::Vector`: Target labels
-
-# Effects
-- Updates the model parameters (`W` and `b`)
-- Stores the training losses in `m.losses`
-- Sets `m.fitted` to `true`
-"""
 function (m::MulticlassPerceptron)(X::Matrix, y::Vector)
     if m.optim_alg == :SGD
         if m.random_state !== nothing
@@ -126,20 +80,6 @@ function (m::MulticlassPerceptron)(X::Matrix, y::Vector)
     end
 end
 
-"""
-    (m::MulticlassPerceptron)(x::AbstractVector)
-
-Predict class label for a single sample.
-
-# Arguments
-- `x::AbstractVector`: Input feature vector
-
-# Returns
-- `Any`: Predicted class label
-
-# Throws
-- `ErrorException`: If the model is not fitted yet
-"""
 function (m::MulticlassPerceptron)(x::AbstractVector)
     if !m.fitted
         throw(ErrorException("Model is not fitted yet."))
@@ -149,20 +89,6 @@ function (m::MulticlassPerceptron)(x::AbstractVector)
     return m.classes[class_index]
 end
 
-"""
-    (m::MulticlassPerceptron)(X::AbstractMatrix)
-
-Predict class labels for multiple samples.
-
-# Arguments
-- `X::AbstractMatrix`: Input feature matrix, where each row is a sample
-
-# Returns
-- `Vector`: Predicted class labels
-
-# Throws
-- `ErrorException`: If the model is not fitted yet
-"""
 function (m::MulticlassPerceptron)(X::AbstractMatrix)
     if !m.fitted
         throw(ErrorException("Model is not fitted yet."))

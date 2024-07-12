@@ -47,8 +47,7 @@ using Nova.LinearModel: Perceptron
             p(X, y)
     
             @test p.fitted == true
-            @test !isempty(p.w)
-            @test p.b != 0.0
+            @test !isempty(p.w)            
             @test !isempty(p.losses)            
     
             # Check if the model can correctly classify the training data

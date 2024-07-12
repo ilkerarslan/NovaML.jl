@@ -9,7 +9,6 @@ mutable struct StandardScaler <: AbstractScaler
     StandardScaler() = new(Float64[], Float64[], false)
 end
 
-
 function (scaler::StandardScaler)(X::Matrix{<:Real})
     if scaler.fitted == false
         scaler.mean = vec(mean(X, dims=1))
