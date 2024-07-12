@@ -42,6 +42,8 @@ y_pred = model(X_test_scaled)
 # Evaluate the model
 accuracy = Metrics.accuracy_score(y_test, y_pred)
 println("Accuracy: ", accuracy)
+```
+
 
 
 
