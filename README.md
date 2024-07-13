@@ -73,24 +73,24 @@ println("Test accuracy: $acc_tst")
 ```
 
 ## Main Components
-### Preprocessing
+### PreProcessing
 
 - ``StandardScaler``: Standardize features by removing the mean and scaling to unit variance
 - ``MinMaxScaler``: Scale features to a given range
 - ``LabelEncoder``: Encode categorical features as integers
 - ``OneHotEncoder``: Encode categorical features as one-hot vectors
 
-### Linear Models
+### LinearModels
 
 - ``LogisticRegression``: Binary and multiclass logistic regression
 - ``Perceptron``: Simple perceptron algorithm
 - ``Adaline``: Adaptive Linear Neuron
 
-### Tree-Based Models
+### Tree
 
 - ``DecisionTreeClassifier``: Decision tree for classification
 
-### Ensemble Methods
+### Ensemble
 
 - ``RandomForestClassifier``: Random forest classifier
 
@@ -102,12 +102,12 @@ println("Test accuracy: $acc_tst")
 
 - ``PCA``: Principal Component Analysis
 
-### Model Selection and Evaluation
+### ModelSelection
 
 - ``train_test_split``: Split arrays or matrices into random train and test subsets
 - ``accuracy_score``: Calculate accuracy of classification predictions
 
-### Multiclass Classification
+### MultiClass
 
 NovaML.jl supports multiclass classification using the One-vs-Rest strategy:
 
@@ -177,9 +177,9 @@ Xpca = pca(X)
 Xorig = pca(Xpca, :inverse_transform)
 ```
 
-### Pipes
+### Piped Operations
 
-It is also very easy to pipe the models and transformers in NovaML. 
+NovaML supports piped data transformation and model training. 
 
 ```julia
 using NovaML.PreProcessing: StandardScaler
