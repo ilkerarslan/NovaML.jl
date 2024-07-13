@@ -1,6 +1,12 @@
 # Nova.jl
 
-Nova.jl is a comprehensive and user-friendly machine learning framework written in Julia. It aims to provide a unified API for various machine learning tasks, including supervised learning, unsupervised learning, and preprocessing.
+**⚠️ IMPORTANT NOTE: Nova.jl is currently in alpha stage. It is under active development and may contain bugs or incomplete features. Users should exercise caution and avoid using Nova.jl in production environments at this time. We appreciate your interest and welcome feedback and contributions to help improve the package.**
+
+Nova.jl aims to provide a comprehensive and user-friendly machine learning framework written in Julia. Its objective is providing a unified API for various machine learning tasks, including supervised learning, unsupervised learning, and preprocessing, feature engineering etc.
+
+**Main objective of Nova.jl is to increase the usage of Julia in daily data science and machine learning activities among students and practitioners.**
+
+Currently, the module and function naming in Nova is similar to that of Scikit Learn to provide a familiarity to data science and machine learning practitioners. But Nova is not a wrapper of ScikitLearn.
 
 ## Features
 
@@ -18,30 +24,52 @@ You can install Nova.jl using Julia's package manager. From the Julia REPL, type
 
 ## Usage
 
+The most prominent feature of Nova is using functors (callable objects) to keep parameters as well as training and prediction. Assume ``model`` represents a supervised algorithm. The struct ``model`` keeps learned parameters and hyperparameters. the function ``model(X, y)`` trains the model. And ``model(Xnew)`` calculates the predictions of the model for the data. 
+
 Here's a quick example of how to use Nova.jl for a classification task:
 
 ```julia
 using Nova
 
 # Load and preprocess data
-X, y = load_iris()  # Assuming you have a function to load the Iris dataset
-X_train, X_test, y_train, y_test = ModelSelection.train_test_split(X, y, test_size=0.2)
+using RDatasets, DataFrames
+
+iris = dataset("datasets", "iris")
+X = iris[51:150, 1:4] |> Matrix
+y = [(s == "versicolor") ? 0 : 1 for s ∈ iris[51:150, 5]]
+
+using Nova.ModelSelection: train_test_split
+Xtrn, Xtst, ytrn, ytst = train_test_split(X, y, test_size=0.2)
 
 # Scale features
-scaler = PreProcessing.StandardScaler()
-X_train_scaled = scaler(X_train)
-X_test_scaled = scaler(X_test)
+using Nova.PreProcessing: StandardScaler
+scaler = StandardScaler()
+scaler.fitted # false
+
+# fit and transform
+Xtrnstd = scaler(Xtrn) 
+# transform with the fitted model
+Xtststd = scaler(Xtst)
 
 # Train a model
-model = LinearModel.LogisticRegression(η=0.1, num_iter=100)
-model(X_train_scaled, y_train)
+using Nova.LinearModel: LogisticRegression
+model = LogisticRegression(η=0.1, num_iter=100)
+
+# fit the model
+model(Xtrnstd, ytrn)
 
 # Make predictions
-y_pred = model(X_test_scaled)
+ŷtrn = model(Xtrnstd)
+ŷtst = model(Xtststd)
 
 # Evaluate the model
-accuracy = Metrics.accuracy_score(y_test, y_pred)
-println("Accuracy: ", accuracy)
+using Nova.Metrics: accuracy_score
+
+acc_trn = accuracy_score(ytrn, ŷtrn);
+acc_tst = accuracy_score(ytst, ŷtst);
+
+println("Training accuracy: $acc_trn")
+println("Test accuracy: $acc_tst")
 ```
 
 ## Main Components

@@ -19,7 +19,7 @@ mutable struct LogisticRegression <: AbstractModel
     max_iter::Int  # Maximum number of iterations for L-BFGS
 end
 
-function LogisticRegression(; η=0.01, num_iter=100, random_state=nothing, solver=:sgd, batch_size=32, λ=1e-4, tol=1e-4, max_iter=100)
+function LogisticRegression(; η=0.01, num_iter=100, random_state=nothing, solver=:lbfgs, batch_size=32, λ=1e-4, tol=1e-4, max_iter=100)
     if !(solver ∈ [:sgd, :batch, :minibatch, :lbfgs])
         throw(ArgumentError("`solver` should be in [:sgd, :batch, :minibatch, :lbfgs]"))
     else
