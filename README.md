@@ -111,7 +111,7 @@ println("Test accuracy: $acc_tst")
 
 Nova.jl supports multiclass classification using the One-vs-Rest strategy:
 
-```
+```julia
 # Data
 using RDatasets, DataFrames
 iris = dataset("datasets", "iris")
@@ -149,7 +149,7 @@ accuracy_score(ytst, ŷtst)
 
 You can use ensemble methods like Random Forest for improved performance:
 
-```
+```julia
 using Nova.Ensemble: RandomForestClassifier
 
 rf = RandomForestClassifier(n_estimators=100, max_depth=5)
@@ -162,7 +162,7 @@ ŷ = rf(Xtst)
 
 Use PCA for dimensionality reduction:
 
-```
+```julia
 using Nova.Decomposition: PCA
 
 pca = PCA(n_components=2)
@@ -181,7 +181,7 @@ Xorig = pca(Xpca, :inverse_transform)
 
 It is also very easy to pipe the models and transformers in Nova. 
 
-```
+```julia
 using Nova.PreProcessing: StandardScaler
 using Nova.Decomposition: PCA
 using Nova.LinearModel: LogisticRegression
