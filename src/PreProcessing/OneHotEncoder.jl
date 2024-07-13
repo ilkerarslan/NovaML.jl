@@ -8,10 +8,6 @@ mutable struct OneHotEncoder
 end
 
 function (encoder::OneHotEncoder)(X::Union{AbstractVector, AbstractMatrix})
-    
-end
-
-function (encoder::OneHotEncoder)(X::Union{AbstractVector, AbstractMatrix}, mode::Symbol)
     if X isa AbstractVector
         X = reshape(X, :, 1)
     end

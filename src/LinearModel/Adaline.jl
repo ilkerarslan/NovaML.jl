@@ -1,10 +1,5 @@
-module AdalineModel
-
 using Random, Statistics, ProgressBars
 import ...Nova: AbstractModel, linearactivation, net_input 
-
-export Adaline 
-
 
 mutable struct Adaline <: AbstractModel
     # Parameters
@@ -33,9 +28,7 @@ function Adaline(; η=0.01, num_iter=100, random_state=nothing,
     end
 end
 
-
 (m::Adaline)(x::AbstractVector) = linearactivation(net_input(m, x)) ≥ 0.5 ? 1 : 0
-
 
 function (m::Adaline)(X::Matrix, y::Vector; partial=false)
     if m.optim_alg == :SGD
@@ -87,6 +80,4 @@ function (m::Adaline)(X::Matrix, y::Vector; partial=false)
     elseif m.optim_alg == :MiniBatch
         println("MiniBatch algorithm for Adaline hasn't been implemented yet.")
     end
-end
-
 end

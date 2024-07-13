@@ -1,10 +1,6 @@
-module MulciclassPerceptronModel
-
 using Random, ProgressBars
 import ...Nova: AbstractModel, AbstractMultiClass, net_input 
 
-
-export MulticlassPerceptron
 
 mutable struct MulticlassPerceptron <: AbstractMultiClass
     # Parameters
@@ -97,5 +93,3 @@ function (m::MulticlassPerceptron)(X::AbstractMatrix)
     class_indices = [argmax(score) for score in eachrow(scores)]
     return [m.classes[i] for i in class_indices]
 end
-
-end # of module MulciclassPerceptronModel

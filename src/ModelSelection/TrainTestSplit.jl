@@ -1,25 +1,5 @@
-module ModelSelection
-
 using Random, StatsBase
 
-export train_test_split
-
-"""
-    train_test_split(X, y; test_size=0.25, shuffle=true, random_state=nothing, stratify=nothing)
-
-Split arrays or matrices into random train and test subsets.
-
-# Arguments
-- `X`: Array or matrix of features
-- `y`: array of labels
-- `test_size`: Proportion of the dataset to include in the test split (default: 0.25)
-- `shuffle`: Whether to shuffle the data before splitting (default: true)
-- `random_state`: Random seed for reproducability (default: nothing)
-- `stratify`: Array used for stratified sampling (default: nothing)
-
-# Returns
-- `Xtrn`, `Xtst`, `ytrn`, `ytst`
-"""
 function train_test_split(X, y; test_size=0.25, shuffle=true, random_state=nothing, stratify=nothing)
     if random_state !== nothing
         Random.seed!(random_state)
@@ -76,6 +56,3 @@ function train_test_split(X, y; test_size=0.25, shuffle=true, random_state=nothi
 
     return Xtrn, Xtst, ytrn, ytst
 end
-
-
-end # of module ModelSelection

@@ -1,9 +1,5 @@
-module PerceptronModel
-
 using Random, ProgressBars
 import ...Nova: AbstractModel, net_input
-
-export Perceptron 
 
 mutable struct Perceptron <: AbstractModel
     # Parameters
@@ -61,5 +57,3 @@ function (m::Perceptron)(X::Matrix, y::Vector)
 end
 
 (m::Perceptron)(x::AbstractVector) = net_input(m, x) ≥ 0.0 ? 1 : 0
-
-end
