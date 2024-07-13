@@ -1,5 +1,5 @@
 using Random, ProgressBars, Statistics, LinearAlgebra, Optim
-import ...Nova: AbstractModel, net_input, sigmoid
+import ...NovaML: AbstractModel, net_input, sigmoid
 
 mutable struct LogisticRegression <: AbstractModel
     # Parameters

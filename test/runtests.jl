@@ -1,9 +1,9 @@
-using Nova
+using NovaML
 using Test
 
-using Nova.LinearModel: Perceptron
+using NovaML.LinearModel: Perceptron
 
-@testset "Nova.jl" begin
+@testset "NovaML.jl" begin
     @testset "Perceptron Tests" begin
         @testset "Constructor" begin
             p = Perceptron()

@@ -1,7 +1,7 @@
 module MultiClass
 
 using ..LinearModel 
-import ..Nova: sigmoid, net_input
+import ..NovaML: sigmoid, net_input
 
 
 export OneVsRestClassifier

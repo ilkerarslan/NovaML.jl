@@ -1,5 +1,5 @@
 using Statistics
-import ...Nova: AbstractScaler
+import ...NovaML: AbstractScaler
 
 mutable struct MinMaxScaler <: AbstractScaler
     min::Vector{Float64}

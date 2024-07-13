@@ -1,5 +1,5 @@
 using Random, ProgressBars
-import ...Nova: AbstractModel, net_input
+import ...NovaML: AbstractModel, net_input
 
 mutable struct Perceptron <: AbstractModel
     # Parameters

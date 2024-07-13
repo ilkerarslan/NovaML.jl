@@ -1,6 +1,6 @@
 using Random
 
-import ...Nova: AbstractModel
+import ...NovaML: AbstractModel
 
 export DecisionTreeClassifier
 

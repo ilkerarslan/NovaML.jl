@@ -1,5 +1,5 @@
 using Random, Statistics, ProgressBars
-import ...Nova: AbstractModel, linearactivation, net_input 
+import ...NovaML: AbstractModel, linearactivation, net_input 
 
 mutable struct Adaline <: AbstractModel
     # Parameters

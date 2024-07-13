@@ -1,7 +1,7 @@
 using Random
 using Statistics: mean
 
-import ...Nova: AbstractModel
+import ...NovaML: AbstractModel
 import ..Tree: DecisionTreeClassifier
 
 export RandomForestClassifier

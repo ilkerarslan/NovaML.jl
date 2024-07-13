@@ -7,7 +7,7 @@ using Statistics
 using StatsBase: sample, Weights
 using DataStructures: PriorityQueue, enqueue!, dequeue!, peek
 
-import ...Nova: AbstractModel
+import ...NovaML: AbstractModel
 
 export KNeighborsClassifier
 
