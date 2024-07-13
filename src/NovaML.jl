@@ -15,7 +15,7 @@ include("Neighbors/Neighbors.jl")
 export Tree, Ensemble, LinearModel, MultiClass, Neighbors
 
 include("Impute.jl")
-include("Metrics.jl")
+include("Metrics/Metrics.jl")
 include("ModelSelection/ModelSelection.jl")
 include("PreProcessing/PreProcessing.jl")
 

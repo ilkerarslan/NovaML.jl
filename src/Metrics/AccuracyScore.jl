@@ -1,6 +1,3 @@
-module Metrics
-
-export accuracy_score 
 
 function accuracy_score(y::AbstractVector, ŷ::AbstractVector)
     if length(ŷ) != length(y)
@@ -12,7 +9,3 @@ function accuracy_score(y::AbstractVector, ŷ::AbstractVector)
 
     return correct / total
 end
-
-
-
-end # of module Metrics
