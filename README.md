@@ -112,14 +112,37 @@ println("Test accuracy: $acc_tst")
 Nova.jl supports multiclass classification using the One-vs-Rest strategy:
 
 ```
-using Nova
+# Data
+using RDatasets, DataFrames
+iris = dataset("datasets", "iris")
+X = iris[:, 1:4] |> Matrix
+y = iris.Species
+map_species = Dict(
+    "setosa" => 0,
+    "versicolor" => 1,
+    "virginica" => 2
+)
+y = [map_species[k] for k in y]
+
+using Nova.ModelSelection: train_test_split
+Xtrn, Xtst, ytrn, ytst = train_test_split(X, y, test_size=0.2, random_state=1)
 
 # Assuming X and y are your multiclass data
-model = MultiClass.OneVsRestClassifier(estimator=LinearModel.LogisticRegression())
-model(X, y)
+using Nova.LinearModel: LogisticRegression
+using Nova.MultiClass: OneVsRestClassifier
+lr = LogisticRegression()
+ovr = OneVsRestClassifier(lr)
+
+# fit the model
+ovr(Xtrn, ytrn)
 
 # Make predictions
-y_pred = model(X_test)
+ŷtrn = ovr(Xtrn)
+ŷtst = ovr(Xtst)
+
+using Nova.Metrics: accuracy_score
+accuracy_score(ytrn, ŷtrn)
+accuracy_score(ytst, ŷtst)
 ```
 
 ### Ensemble Methods
@@ -127,12 +150,12 @@ y_pred = model(X_test)
 You can use ensemble methods like Random Forest for improved performance:
 
 ```
-using Nova
+using Nova.Ensemble: RandomForestClassifier
 
-model = Ensemble.RandomForestClassifier(n_estimators=100, max_depth=5)
-model(X_train, y_train)
+rf = RandomForestClassifier(n_estimators=100, max_depth=5)
+rf(Xtrn, ytrn)
 
-y_pred = model(X_test)
+ŷ = rf(Xtst)
 ```
 
 ### Dimensionality Reduction
@@ -140,13 +163,38 @@ y_pred = model(X_test)
 Use PCA for dimensionality reduction:
 
 ```
-using Nova
+using Nova.Decomposition: PCA
 
-pca = Decomposition.PCA(n_components=2)
-X_reduced = pca(X)
+pca = PCA(n_components=2)
+
+# fit
+pca(X)
+
+# transform if fitted / fit & transform if not 
+Xpca = pca(X)
 
 # Inverse transform
-X_reconstructed = pca(X_reduced, :inverse_transform)
+Xorig = pca(Xpca, :inverse_transform)
+```
+
+### Pipes
+
+It is also very easy to pipe the models and transformers in Nova. 
+
+```
+using Nova.PreProcessing: StandardScaler
+using Nova.Decomposition: PCA
+using Nova.LinearModel: LogisticRegression
+
+sc = StandardScaler()
+pca = PCA(n_components=2)
+lr = LogisticRegression()
+
+# transform the data and fit the model 
+Xtrn |> sc |> pca |> X -> lr(X, ytrn)
+
+# make predictions
+ŷtst = Xtst |> sc |> pca |> lr
 ```
 
 ### Contributing

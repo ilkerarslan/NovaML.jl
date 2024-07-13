@@ -13,12 +13,18 @@ mutable struct OneVsRestClassifier
     fitted::Bool
 end
 
-function OneVsRestClassifier(; η=0.01, num_iter=100, random_state=nothing, optim_alg=:Batch, batch_size=32, λ=0.01)
-    base_estimator = LogisticRegression(η=η, num_iter=num_iter, random_state=random_state, 
-                                        optim_alg=optim_alg, batch_size=batch_size, λ=λ)
+#function OneVsRestClassifier(; η=0.01, num_iter=100, random_state=nothing, solver=:lbfgs, batch_size=32, λ=0.01)
+#    base_estimator = LogisticRegression(η=η, num_iter=num_iter, random_state=random_state, 
+#                                        solver=solver, batch_size=batch_size, λ=λ)
+#
+#    return OneVsRestClassifier(base_estimator, [], [], false)    
+#end
 
+function OneVsRestClassifier(base_estimator)
     return OneVsRestClassifier(base_estimator, [], [], false)    
 end
+
+
 
 function (m::OneVsRestClassifier)(X::AbstractMatrix, y::AbstractVector)
     m.classes = sort(unique(y))
