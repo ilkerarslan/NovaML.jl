@@ -1,4 +1,4 @@
-module Nova
+module NovaML
 
 include("_types.jl")
 include("_methods.jl")
@@ -24,4 +24,4 @@ export Impute, Metrics, ModelSelection, PreProcessing
 include("Decomposition/Decomposition.jl")
 export Decomposition
 
-end
+end # of module NovaML

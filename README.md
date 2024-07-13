@@ -1,12 +1,12 @@
-# Nova.jl
+# NovaML.jl
 
-**⚠️ IMPORTANT NOTE: Nova.jl is currently in alpha stage. It is under active development and may contain bugs or incomplete features. Users should exercise caution and avoid using Nova.jl in production environments at this time. We appreciate your interest and welcome feedback and contributions to help improve the package.**
+**⚠️ IMPORTANT NOTE: NovaML.jl is currently in alpha stage. It is under active development and may contain bugs or incomplete features. Users should exercise caution and avoid using NovaML.jl in production environments at this time. We appreciate your interest and welcome feedback and contributions to help improve the package.**
 
-Nova.jl aims to provide a comprehensive and user-friendly machine learning framework written in Julia. Its objective is providing a unified API for various machine learning tasks, including supervised learning, unsupervised learning, and preprocessing, feature engineering etc.
+NovaML.jl aims to provide a comprehensive and user-friendly machine learning framework written in Julia. Its objective is providing a unified API for various machine learning tasks, including supervised learning, unsupervised learning, and preprocessing, feature engineering etc.
 
-**Main objective of Nova.jl is to increase the usage of Julia in daily data science and machine learning activities among students and practitioners.**
+**Main objective of NovaML.jl is to increase the usage of Julia in daily data science and machine learning activities among students and practitioners.**
 
-Currently, the module and function naming in Nova is similar to that of Scikit Learn to provide a familiarity to data science and machine learning practitioners. But Nova is not a wrapper of ScikitLearn.
+Currently, the module and function naming in NovaML is similar to that of Scikit Learn to provide a familiarity to data science and machine learning practitioners. But NovaML is not a wrapper of ScikitLearn.
 
 ## Features
 
@@ -18,18 +18,18 @@ Currently, the module and function naming in Nova is similar to that of Scikit L
 
 ## Installation
 
-You can install Nova.jl using Julia's package manager. From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
+You can install NovaML.jl using Julia's package manager. From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
 
-`pkg> add Nova`
+`pkg> add NovaML`
 
 ## Usage
 
-The most prominent feature of Nova is using functors (callable objects) to keep parameters as well as training and prediction. Assume ``model`` represents a supervised algorithm. The struct ``model`` keeps learned parameters and hyperparameters. the function ``model(X, y)`` trains the model. And ``model(Xnew)`` calculates the predictions of the model for the data. 
+The most prominent feature of NovaML is using functors (callable objects) to keep parameters as well as training and prediction. Assume ``model`` represents a supervised algorithm. The struct ``model`` keeps learned parameters and hyperparameters. the function ``model(X, y)`` trains the model. And ``model(Xnew)`` calculates the predictions of the model for the data. 
 
-Here's a quick example of how to use Nova.jl for a classification task:
+Here's a quick example of how to use NovaML.jl for a classification task:
 
 ```julia
-using Nova
+using NovaML
 
 # Load and preprocess data
 using RDatasets, DataFrames
@@ -38,11 +38,11 @@ iris = dataset("datasets", "iris")
 X = iris[51:150, 1:4] |> Matrix
 y = [(s == "versicolor") ? 0 : 1 for s ∈ iris[51:150, 5]]
 
-using Nova.ModelSelection: train_test_split
+using NovaML.ModelSelection: train_test_split
 Xtrn, Xtst, ytrn, ytst = train_test_split(X, y, test_size=0.2)
 
 # Scale features
-using Nova.PreProcessing: StandardScaler
+using NovaML.PreProcessing: StandardScaler
 scaler = StandardScaler()
 scaler.fitted # false
 
@@ -52,7 +52,7 @@ Xtrnstd = scaler(Xtrn)
 Xtststd = scaler(Xtst)
 
 # Train a model
-using Nova.LinearModel: LogisticRegression
+using NovaML.LinearModel: LogisticRegression
 model = LogisticRegression(η=0.1, num_iter=100)
 
 # fit the model
@@ -63,7 +63,7 @@ ŷtrn = model(Xtrnstd)
 ŷtst = model(Xtststd)
 
 # Evaluate the model
-using Nova.Metrics: accuracy_score
+using NovaML.Metrics: accuracy_score
 
 acc_trn = accuracy_score(ytrn, ŷtrn);
 acc_tst = accuracy_score(ytst, ŷtst);
@@ -109,7 +109,7 @@ println("Test accuracy: $acc_tst")
 
 ### Multiclass Classification
 
-Nova.jl supports multiclass classification using the One-vs-Rest strategy:
+NovaML.jl supports multiclass classification using the One-vs-Rest strategy:
 
 ```julia
 # Data
@@ -124,12 +124,12 @@ map_species = Dict(
 )
 y = [map_species[k] for k in y]
 
-using Nova.ModelSelection: train_test_split
+using NovaML.ModelSelection: train_test_split
 Xtrn, Xtst, ytrn, ytst = train_test_split(X, y, test_size=0.2, random_state=1)
 
 # Assuming X and y are your multiclass data
-using Nova.LinearModel: LogisticRegression
-using Nova.MultiClass: OneVsRestClassifier
+using NovaML.LinearModel: LogisticRegression
+using NovaML.MultiClass: OneVsRestClassifier
 lr = LogisticRegression()
 ovr = OneVsRestClassifier(lr)
 
@@ -140,7 +140,7 @@ ovr(Xtrn, ytrn)
 ŷtrn = ovr(Xtrn)
 ŷtst = ovr(Xtst)
 
-using Nova.Metrics: accuracy_score
+using NovaML.Metrics: accuracy_score
 accuracy_score(ytrn, ŷtrn)
 accuracy_score(ytst, ŷtst)
 ```
@@ -150,7 +150,7 @@ accuracy_score(ytst, ŷtst)
 You can use ensemble methods like Random Forest for improved performance:
 
 ```julia
-using Nova.Ensemble: RandomForestClassifier
+using NovaML.Ensemble: RandomForestClassifier
 
 rf = RandomForestClassifier(n_estimators=100, max_depth=5)
 rf(Xtrn, ytrn)
@@ -163,7 +163,7 @@ ŷ = rf(Xtst)
 Use PCA for dimensionality reduction:
 
 ```julia
-using Nova.Decomposition: PCA
+using NovaML.Decomposition: PCA
 
 pca = PCA(n_components=2)
 
@@ -179,12 +179,12 @@ Xorig = pca(Xpca, :inverse_transform)
 
 ### Pipes
 
-It is also very easy to pipe the models and transformers in Nova. 
+It is also very easy to pipe the models and transformers in NovaML. 
 
 ```julia
-using Nova.PreProcessing: StandardScaler
-using Nova.Decomposition: PCA
-using Nova.LinearModel: LogisticRegression
+using NovaML.PreProcessing: StandardScaler
+using NovaML.Decomposition: PCA
+using NovaML.LinearModel: LogisticRegression
 
 sc = StandardScaler()
 pca = PCA(n_components=2)
@@ -199,11 +199,11 @@ ŷtst = Xtst |> sc |> pca |> lr
 
 ### Contributing
 
-Contributions to Nova.jl are welcome! Please feel free to submit a Pull Request.
+Contributions to NovaML.jl are welcome! Please feel free to submit a Pull Request.
 
 ### License
 
 This project is licensed under the MIT License.
 
 
-[![Build Status](https://github.com/ilkerarslan/Nova.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/ilkerarslan/Nova.jl/actions/workflows/CI.yml?query=branch%3Amaster)
+[![Build Status](https://github.com/ilkerarslan/NovaML.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/ilkerarslan/NovaML.jl/actions/workflows/CI.yml?query=branch%3Amaster)
