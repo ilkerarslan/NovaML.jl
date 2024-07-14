@@ -82,6 +82,7 @@ println("Test accuracy: $acc_tst")
 
 ### LinearModels
 
+- ``LinearRegression``: Linear regression algorithm
 - ``LogisticRegression``: Binary and multiclass logistic regression
 - ``Perceptron``: Simple perceptron algorithm
 - ``Adaline``: Adaptive Linear Neuron
@@ -104,8 +105,9 @@ println("Test accuracy: $acc_tst")
 
 ### ModelSelection
 
+- ``cross_val_score``: Apply cross validation score
+- ``StratifiedKFold``: Provides stratified k-fold cross-validator, ensuring that the proportion of samples for each class is roughly the same in each fold
 - ``train_test_split``: Split arrays or matrices into random train and test subsets
-- ``accuracy_score``: Calculate accuracy of classification predictions
 
 ### MultiClass
 
