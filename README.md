@@ -11,7 +11,7 @@ Currently, the module and function naming in NovaML is similar to that of Scikit
 ## Features
 
 - Unified API using Julia's multiple dispatch and functor-style callable objects
-- Comprehensive set of algorithms for classification, regression, and clustering
+- Algorithms for classification, regression, and clustering
 - Preprocessing tools for data scaling, encoding, and imputation
 - Model selection and evaluation utilities
 - Ensemble methods
