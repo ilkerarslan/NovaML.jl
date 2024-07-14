@@ -115,6 +115,7 @@ println("Test accuracy: $acc_tst")
 - ``learning_curve``: Generate learning curves to evaluate model performance as a function of the number of training samples, helping to diagnose bias and variance problems
 - ``StratifiedKFold``: Provides stratified k-fold cross-validator, ensuring that the proportion of samples for each class is roughly the same in each fold
 - ``train_test_split``: Split arrays or matrices into random train and test subsets
+- ``validation_curve``: Determine training and validation scores for varying parameter values, helping to assess how a model's performance changes with respect to a specific hyperparameter and aiding in hyperparameter tuning
 
 ### MultiClass
 

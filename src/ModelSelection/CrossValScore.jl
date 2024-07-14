@@ -2,6 +2,8 @@ using Statistics
 using Random
 import StatsBase
 
+import ...NovaML: _default_score
+
 export cross_val_score
 
 function cross_val_score(estimator, X, y; cv=5, scoring=nothing, n_jobs=nothing)
@@ -55,7 +57,7 @@ function cross_val_score(estimator, X, y; cv=5, scoring=nothing, n_jobs=nothing)
 
                     # Compute the score
                     score = if scoring === nothing
-                        default_score(local_estimator, X_test, y_test, y_pred)
+                        _default_score(local_estimator, X_test, y_test, y_pred)
                     elseif scoring isa Function
                         scoring(y_test, y_pred)
                     elseif scoring isa String
@@ -86,17 +88,4 @@ function cross_val_score(estimator, X, y; cv=5, scoring=nothing, n_jobs=nothing)
     end
 
     return scores
-end
-
-# Default scoring function
-function default_score(estimator, X, y, y_pred)
-    if y isa AbstractVector{<:Number} && y_pred isa AbstractVector{<:Number}
-        # R-squared for regression
-        ss_res = sum((y .- y_pred).^2)
-        ss_tot = sum((y .- mean(y)).^2)
-        return max(0, 1 - ss_res / ss_tot)  # Ensure non-negative R-squared
-    else
-        # Accuracy for classification
-        return sum(y .== y_pred) / length(y)
-    end
 end

@@ -2,7 +2,7 @@ module Pipelines
 
 export Pipe
 
-struct Pipe
+mutable struct Pipe
     steps::Vector{Any}
 end
 

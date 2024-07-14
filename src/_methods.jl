@@ -23,3 +23,17 @@ function softmax(X::AbstractMatrix)
     exp_X = exp.(X .- maximum(X, dims=2))
     return exp_X ./ sum(exp_X, dims=2)
 end
+
+
+# Default scoring function
+function _default_score(y, y_pred)
+    if y isa AbstractVector{<:Number} && y_pred isa AbstractVector{<:Number}
+        # R-squared for regression
+        ss_res = sum((y .- y_pred).^2)
+        ss_tot = sum((y .- mean(y)).^2)
+        return max(0, 1 - ss_res / ss_tot)  # Ensure non-negative R-squared
+    else
+        # Accuracy for classification
+        return sum(y .== y_pred) / length(y)
+    end
+end

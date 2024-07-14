@@ -4,7 +4,7 @@ include("_types.jl")
 include("_methods.jl")
 
 export AbstractModel, AbstractMultiClass, AbstractScaler
-export linearactivation, sigmoid, net_input, softmax
+export linearactivation, sigmoid, net_input, softmax, _default_score
 
 include("Tree/Tree.jl")
 include("Ensemble/Ensemble.jl")
