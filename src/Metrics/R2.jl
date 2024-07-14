@@ -52,8 +52,6 @@ function r2_score(y_true::AbstractArray, y_pred::AbstractArray;
     end
 end
 
-export r2_score, adj_r2_score
-
 # ... [Previous r2_score function remains unchanged] ...
 
 """

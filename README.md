@@ -103,6 +103,12 @@ println("Test accuracy: $acc_tst")
 
 - ``PCA``: Principal Component Analysis
 
+### Metrics
+- ``accuracy_score``: Calculates the accuracy classification score, i.e., the proportion of correct predictions.
+- ``mean_squared_error``, mse: Computes the average squared difference between estimated and true values. mse is an alias for mean_squared_error.
+- ``r2_score``: Calculates the coefficient of determination (R²), measuring how well future samples are likely to be predicted by the model.
+- ``adj_r2_score``: Computes the adjusted R² score, which accounts for the number of predictors in the model, penalizing unnecessary complexity.
+
 ### ModelSelection
 
 - ``cross_val_score``: Apply cross validation score
