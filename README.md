@@ -197,6 +197,23 @@ Xtrn |> sc |> pca |> X -> lr(X, ytrn)
 ŷtst = Xtst |> sc |> pca |> lr
 ```
 
+It is also possible to create pipelines using NovaML's `Pipe` constructor:
+
+ ```julia
+using NovaML.Pipelines: Pipe
+
+# create a pipeline
+pipe = Pipe(
+   StandardScaler(),
+   PCA(n_components=2),
+   LogisticRegression())
+
+# fit the pipe
+pipe(Xtrn, ytrn)
+# make predictions
+ŷ = pipe(Xtst) 
+```
+
 ### Contributing
 
 Contributions to NovaML.jl are welcome! Please feel free to submit a Pull Request.

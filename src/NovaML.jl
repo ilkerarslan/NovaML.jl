@@ -24,4 +24,8 @@ export Impute, Metrics, ModelSelection, PreProcessing
 include("Decomposition/Decomposition.jl")
 export Decomposition
 
+include("PipeLines/PipeLines.jl")
+export Pipelines
+
+
 end # of module NovaML
