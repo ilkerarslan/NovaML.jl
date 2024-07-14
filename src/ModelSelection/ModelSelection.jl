@@ -2,9 +2,11 @@ module ModelSelection
 
 include("CrossValScore.jl")
 include("LearningCurve.jl")
-include("StratifiedKFoldModel.jl")
 include("TrainTestSplit.jl")
 
-export cross_val_score, learning_curve, StratifiedKFold, train_test_split
+include("StratifiedKFoldModel.jl")
+
+export cross_val_score, learning_curve, train_test_split
+export StratifiedKFold
 
 end # of module ModelSelection
