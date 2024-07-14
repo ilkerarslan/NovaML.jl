@@ -1,5 +1,7 @@
 using Random
 
+export StratifiedKFold
+
 struct StratifiedKFold
     n_splits::Int
     shuffle::Bool
