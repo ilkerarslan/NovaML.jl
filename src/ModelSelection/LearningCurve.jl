@@ -1,5 +1,5 @@
-using NovaML.ModelSelection: StratifiedKFold
-using NovaML.Metrics: accuracy_score
+using ...NovaML.ModelSelection: StratifiedKFold
+using ...NovaML.Metrics: accuracy_score
 using Statistics
 
 function learning_curve(
@@ -13,7 +13,7 @@ function learning_curve(
     verbose=0,
     shuffle=false,
     random_state=nothing)
-    
+
     n_samples = size(X, 1)
     
     # Convert train_sizes to absolute numbers if they're fractions
