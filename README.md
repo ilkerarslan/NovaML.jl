@@ -112,6 +112,7 @@ println("Test accuracy: $acc_tst")
 ### ModelSelection
 
 - ``cross_val_score``: Apply cross validation score
+- ``learning_curve``: Generate learning curves to evaluate model performance as a function of the number of training samples, helping to diagnose bias and variance problems
 - ``StratifiedKFold``: Provides stratified k-fold cross-validator, ensuring that the proportion of samples for each class is roughly the same in each fold
 - ``train_test_split``: Split arrays or matrices into random train and test subsets
 
