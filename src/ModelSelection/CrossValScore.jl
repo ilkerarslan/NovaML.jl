@@ -1,78 +1,85 @@
 using Statistics
 using Random
+import StatsBase
 
-"""
-    cross_val_score(estimator, X, y; cv=5, scoring=nothing, n_jobs=nothing)
+export cross_val_score
 
-Evaluate a score by cross-validation.
-
-# Arguments
-- `estimator`: The object to use to fit the data.
-- `X`: The data to fit. Can be a matrix or any array-like structure.
-- `y`: The target variable to try to predict.
-- `cv`: Determines the cross-validation splitting strategy. Default is 5.
-- `scoring`: A string or a callable to evaluate the predictions on the test set.
-             If nothing, the estimator's default scorer is used.
-- `n_jobs`: The number of jobs to run in parallel. `nothing` means 1.
-
-# Returns
-- An array of scores of the estimator for each run of the cross validation.
-"""
 function cross_val_score(estimator, X, y; cv=5, scoring=nothing, n_jobs=nothing)
     n_samples = size(X, 1)
     
-    # Create CV iterator
-    if typeof(cv) <: Integer
-        indices = collect(Iterators.partition(Random.shuffle(1:n_samples), n_samples ÷ cv))
+    if cv isa Integer
+        # Create cv folds
+        fold_sizes = fill(n_samples ÷ cv, cv)
+        fold_sizes[1:n_samples % cv] .+= 1
+        indices = Vector{Int}[]
+        start = 1
+        for size in fold_sizes
+            push!(indices, start:(start+size-1))
+            start += size
+        end
     else
-        # Assume cv is an iterable of (train, test) indices
         indices = cv
     end
 
     scores = Float64[]
 
-    for (test_idx, train_idx) in zip(indices, setdiff.(Ref(1:n_samples), indices))
+    for (fold, test_idx) in enumerate(indices)
+        train_idx = setdiff(1:n_samples, test_idx)
         X_train, X_test = X[train_idx, :], X[test_idx, :]
         y_train, y_test = y[train_idx], y[test_idx]
 
-        # Train the model
-        model = estimator(X_train, y_train)
+        try
+            # Train the model
+            estimator(X_train, y_train)
 
-        # Make predictions
-        y_pred = model(X_test)
+            # Make predictions
+            y_pred = estimator(X_test)
 
-        # Compute the score
-        if scoring === nothing
-            # Use default scoring method if available
-            if hasmethod(score, Tuple{typeof(estimator), typeof(X_test), typeof(y_test)})
-                push!(scores, score(estimator, X_test, y_test))
+            # Ensure y_pred is a vector
+            y_pred = vec(y_pred)
+
+            # Compute the score
+            score = if scoring === nothing
+                default_score(estimator, X_test, y_test, y_pred)
+            elseif scoring isa Function
+                scoring(y_test, y_pred)
+            elseif scoring isa String
+                if scoring == "accuracy"
+                    sum(y_test .== y_pred) / length(y_test)
+                elseif scoring == "mse"
+                    mean((y_test .- y_pred).^2)
+                else
+                    error("Unknown scoring method: $scoring")
+                end
             else
-                error("No scoring method provided and the estimator doesn't have a default scoring method.")
+                error("Invalid scoring parameter type. Expected nothing, Function, or String.")
             end
-        elseif typeof(scoring) <: Function
-            push!(scores, scoring(y_test, y_pred))
-        elseif typeof(scoring) <: String
-            # Implement common scoring methods
-            if scoring == "accuracy"
-                push!(scores, sum(y_test .== y_pred) / length(y_test))
-            elseif scoring == "mse"
-                push!(scores, mean((y_test .- y_pred).^2))
-            else
-                error("Unknown scoring method: $scoring")
+
+            # Check for NaN and replace with 0 if necessary
+            if isnan(score)
+                @warn "NaN score detected in fold $fold. Replacing with 0."
+                score = 0.0
             end
-        else
-            error("Invalid scoring parameter type. Expected nothing, Function, or String.")
+
+            push!(scores, score)
+        catch e
+            @error "Error during cross-validation in fold $fold" exception=(e, catch_backtrace())
+            rethrow(e)
         end
     end
 
     return scores
 end
 
-# Helper function to compute default score if the estimator supports it
-function score(estimator, X, y)
-    if hasmethod(score, Tuple{typeof(estimator), typeof(X), typeof(y)})
-        return score(estimator, X, y)
+# Default scoring function
+function default_score(estimator, X, y, y_pred)
+    if y isa AbstractVector{<:Number} && y_pred isa AbstractVector{<:Number}
+        # R-squared for regression
+        ss_res = sum((y .- y_pred).^2)
+        ss_tot = sum((y .- mean(y)).^2)
+        return max(0, 1 - ss_res / ss_tot)  # Ensure non-negative R-squared
     else
-        error("The estimator does not have a default scoring method.")
+        # Accuracy for classification
+        return sum(y .== y_pred) / length(y)
     end
 end
