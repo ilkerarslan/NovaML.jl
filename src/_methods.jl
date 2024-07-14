@@ -26,7 +26,7 @@ end
 
 
 # Default scoring function
-function _default_score(y, y_pred)
+function default_score(y, y_pred)
     if y isa AbstractVector{<:Number} && y_pred isa AbstractVector{<:Number}
         # R-squared for regression
         ss_res = sum((y .- y_pred).^2)

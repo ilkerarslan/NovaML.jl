@@ -2,7 +2,7 @@ using Statistics
 using Random
 import StatsBase
 
-import ...NovaML: _default_score
+import ...NovaML: default_score
 
 export cross_val_score
 
@@ -57,7 +57,7 @@ function cross_val_score(estimator, X, y; cv=5, scoring=nothing, n_jobs=nothing)
 
                     # Compute the score
                     score = if scoring === nothing
-                        _default_score(local_estimator, X_test, y_test, y_pred)
+                        default_score(local_estimator, X_test, y_test, y_pred)
                     elseif scoring isa Function
                         scoring(y_test, y_pred)
                     elseif scoring isa String

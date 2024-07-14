@@ -3,7 +3,7 @@
 using Statistics
 using Random
 
-export validation_curve
+import ...NovaML: default_score
 
 function validation_curve(
     estimator,
@@ -128,17 +128,4 @@ function fit_and_score(estimator, X_train, y_train, X_test, y_test, param_value,
     end
     
     return train_score, test_score
-end
-
-# Default scoring function
-function default_score(y, y_pred)
-    if y isa AbstractVector{<:Number} && y_pred isa AbstractVector{<:Number}
-        # R-squared for regression
-        ss_res = sum((y .- y_pred).^2)
-        ss_tot = sum((y .- mean(y)).^2)
-        return max(0, 1 - ss_res / ss_tot)  # Ensure non-negative R-squared
-    else
-        # Accuracy for classification
-        return sum(y .== y_pred) / length(y)
-    end
 end
