@@ -11,9 +11,8 @@ include("Ensemble/Ensemble.jl")
 include("LinearModel/LinearModel.jl")
 include("MultiClass.jl")
 include("Neighbors/Neighbors.jl")
-include("SVM/SVM.jl")
 
-export Tree, Ensemble, LinearModel, MultiClass, Neighbors, SVC
+export Tree, Ensemble, LinearModel, MultiClass, Neighbors
 
 include("Impute.jl")
 include("Metrics/Metrics.jl")
