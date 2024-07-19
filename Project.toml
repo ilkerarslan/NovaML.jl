@@ -1,7 +1,7 @@
 name = "NovaML"
 uuid = "3f482e55-661e-4eec-8a53-436578a72954"
 authors = ["ilkerarslan <ilker.arslan@outlook.com> and contributors"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"

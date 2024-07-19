@@ -224,6 +224,23 @@ pipe(Xtrn, ytrn)
 ŷ = pipe(Xtst) 
 ```
 
+## Support Vector Machines (SVM)
+
+- ``SVC``: Support Vector Classifier. Binary classification which supports linear and RBF kernels. Doesn't support multiclass classification yet. 
+
+```julia
+using NovaML.SVM: SVC
+
+# Create an SVC instance
+svc = SVC(kernel=:rbf, C=1.0, gamma=:scale)
+
+# Train the model
+svc(X_train, y_train)
+
+# Make predictions
+ypreds = svc(X_test)
+```
+
 ### Contributing
 
 Contributions to NovaML.jl are welcome! Please feel free to submit a Pull Request.
