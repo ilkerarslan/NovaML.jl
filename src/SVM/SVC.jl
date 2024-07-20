@@ -25,12 +25,23 @@ mutable struct SVC
     end
 end
 
+# function kernel_function(X::Matrix{Float64}, Y::Matrix{Float64}, kernel::Symbol, gamma::Union{Float64,Symbol})
+#     if kernel == :linear
+#         return X * Y'
+#     elseif kernel == :rbf
+#         gamma_value = (gamma == :scale) ? 1.0 / size(X, 2) : gamma
+#         return exp.(-gamma_value .* pairwise(SqEuclidean(), X', Y', dims=2))  # Modified this line
+#     else
+#         error("Unsupported kernel: $kernel")
+#     end
+# end
+
 function kernel_function(X::Matrix{Float64}, Y::Matrix{Float64}, kernel::Symbol, gamma::Union{Float64,Symbol})
     if kernel == :linear
         return X * Y'
     elseif kernel == :rbf
         gamma_value = (gamma == :scale) ? 1.0 / size(X, 2) : gamma
-        return exp.(-gamma_value .* pairwise(SqEuclidean(), X', Y', dims=2))  # Modified this line
+        return exp.(-gamma_value .* max.(pairwise(SqEuclidean(), X', Y', dims=2), 0.0))
     else
         error("Unsupported kernel: $kernel")
     end
@@ -80,8 +91,13 @@ function (svc::SVC)(X::Matrix{Float64}, y::Vector{Int})
         upper,
         zeros(n_samples),
         Fminbox(LBFGS()),
-        Optim.Options(iterations=1000)
+        Optim.Options(iterations=1000, time_limit=60.0, f_abstol=1e-8)
     )
+
+    # Check convergence
+    if !Optim.converged(result)
+        @warn "Optimization did not converge. Consider increasing the number of iterations or adjusting parameters."
+    end
     
     # Extract support vectors
     alpha = Optim.minimizer(result)
