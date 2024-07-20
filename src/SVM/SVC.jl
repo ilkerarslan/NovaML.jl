@@ -25,17 +25,6 @@ mutable struct SVC
     end
 end
 
-# function kernel_function(X::Matrix{Float64}, Y::Matrix{Float64}, kernel::Symbol, gamma::Union{Float64,Symbol})
-#     if kernel == :linear
-#         return X * Y'
-#     elseif kernel == :rbf
-#         gamma_value = (gamma == :scale) ? 1.0 / size(X, 2) : gamma
-#         return exp.(-gamma_value .* pairwise(SqEuclidean(), X', Y', dims=2))  # Modified this line
-#     else
-#         error("Unsupported kernel: $kernel")
-#     end
-# end
-
 function kernel_function(X::Matrix{Float64}, Y::Matrix{Float64}, kernel::Symbol, gamma::Union{Float64,Symbol})
     if kernel == :linear
         return X * Y'
