@@ -73,12 +73,13 @@ function (svc::SVC)(X::Matrix{Float64}, y::Vector{Int})
     upper = svc.C .* sample_weights
     
     # Solve the optimization problem
+    α₀ = fill(1e-6, n_samples)
     result = optimize(
         objective,
         gradient!,
         lower,
         upper,
-        zeros(n_samples),
+        α₀,
         Fminbox(LBFGS()),
         Optim.Options(iterations=1000, time_limit=60.0, f_abstol=1e-8)
     )
