@@ -120,7 +120,8 @@ println("Test accuracy: $acc_tst")
 
 ### MultiClass
 
-NovaML.jl supports multiclass classification using the One-vs-Rest strategy:
+- ``MultiClassPerceptron``
+- ``OneVsRestClassifier``
 
 ```julia
 # Data

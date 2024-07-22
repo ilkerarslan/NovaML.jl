@@ -9,7 +9,7 @@ export linearactivation, sigmoid, net_input, softmax, default_score
 include("Tree/Tree.jl")
 include("Ensemble/Ensemble.jl")
 include("LinearModel/LinearModel.jl")
-include("MultiClass.jl")
+include("MultiClass/MultiClass.jl")
 include("Neighbors/Neighbors.jl")
 include("SVM/SVM.jl")
 

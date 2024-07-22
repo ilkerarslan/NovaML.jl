@@ -1,10 +1,5 @@
-module MultiClass
-
 using ..LinearModel 
 import ..NovaML: sigmoid, net_input
-
-
-export OneVsRestClassifier
 
 mutable struct OneVsRestClassifier
     estimator::LogisticRegression
@@ -58,6 +53,3 @@ function (m::OneVsRestClassifier)(X::AbstractMatrix; type=nothing)
         return scores
     end
 end
-
-
-end # of module MultiClass
