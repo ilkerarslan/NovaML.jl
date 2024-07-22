@@ -57,8 +57,7 @@ function (m::Perceptron)(X::Matrix, y::Vector)
             error = sum(abs.(∇))
             push!(m.losses, error)
         end
-    elseif m.solver == :minibatch
-        num_batches = ceil(Int, n / m.batch_size)
+    elseif m.solver == :minibatch        
         for _ ∈ ProgressBar(1:m.num_iter)
             error = 0
             shuffle_indices = Random.shuffle(1:n)
