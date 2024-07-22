@@ -1,8 +1,8 @@
 module MultiClass
 
-include("MultiClassPerceptron.jl")
+include("MulticlassPerceptron.jl")
 include("OneVsRest.jl")
 
-export MultiClassPerceptron, OneVsRestClassifier
+export MulticlassPerceptron, OneVsRestClassifier
 
 end # of module MultiClass
