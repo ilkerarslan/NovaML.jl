@@ -105,7 +105,8 @@ println("Test accuracy: $acc_tst")
 
 ### Metrics
 - ``accuracy_score``: Calculates the accuracy classification score, i.e., the proportion of correct predictions.
-- ``mean_squared_error``, mse: Computes the average squared difference between estimated and true values. mse is an alias for mean_squared_error.
+- ``confusion_matrix``: Computes a confusion matrix to evaluate the accuracy of a classification. It shows the counts of true positive, false positive, true negative, and false negative predictions.
+- ``mean_squared_error``, ``mse``: Computes the average squared difference between estimated and true values. mse is an alias for mean_squared_error.
 - ``r2_score``: Calculates the coefficient of determination (R²), measuring how well future samples are likely to be predicted by the model.
 - ``adj_r2_score``: Computes the adjusted R² score, which accounts for the number of predictors in the model, penalizing unnecessary complexity.
 
@@ -116,7 +117,8 @@ println("Test accuracy: $acc_tst")
 - ``StratifiedKFold``: Provides stratified k-fold cross-validator, ensuring that the proportion of samples for each class is roughly the same in each fold
 - ``train_test_split``: Split arrays or matrices into random train and test subsets
 - ``validation_curve``: Determine training and validation scores for varying parameter values, helping to assess how a model's performance changes with respect to a specific hyperparameter and aiding in hyperparameter tuning
-- ``GridSearchCV``: Perform exhaustive search over specified parameter values for an estimator. It implements a "fit" and a "score" method, and allows for efficient parallelization of parameter searches. GridSearchCV helps in finding the best combination of hyperparameters for a given model, optimizing its performance through cross-validated grid search over a parameter grid.
+- ``GridSearchCV``: Perform exhaustive search over specified parameter values for an estimator. 
+- ``RandomSearchCV``: Perform randomized search over specified parameter distributions for an estimator. RandomSearchCV is often more efficient than GridSearchCV for hyperparameter optimization, especially when the parameter space is large or when some parameters are more important than others.
 
 ### MultiClass
 
