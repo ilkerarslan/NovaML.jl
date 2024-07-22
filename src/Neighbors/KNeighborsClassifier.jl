@@ -1,15 +1,9 @@
-module KNeighborsClassifierModel
-
-# KNeighborsClassifier.jl
-
 using Distances
 using Statistics
 using StatsBase: sample, Weights
 using DataStructures: PriorityQueue, enqueue!, dequeue!, peek
 
 import ...NovaML: AbstractModel
-
-export KNeighborsClassifier
 
 # Custom KDTree implementation
 struct KDTreeNode
@@ -172,5 +166,3 @@ function Base.show(io::IO, clf::KNeighborsClassifier)
         "leaf_size=$(clf.leaf_size), metric=$(clf.metric), ",
         "n_jobs=$(clf.n_jobs), fitted=$(clf.fitted))")
 end
-
-end # of module KNeighborsClassifierModel
