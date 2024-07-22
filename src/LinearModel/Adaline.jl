@@ -20,9 +20,9 @@ end
 
 
 function Adaline(; η=0.01, num_iter=100, random_state=nothing,
-                   solver=:SGD, batch_size=32, shuffle=true)
-    if !(solver ∈ [:SGD, :Batch, :MiniBatch])
-        throw(ArgumentError("`solver` should be in [:SGD, :Batch, :MiniBatch]"))
+                   solver=:sgd, batch_size=32, shuffle=true)
+    if !(solver ∈ [:sgd, :batch, :minibatch])
+        throw(ArgumentError("`solver` should be in [:sgd, :batch, :minibatch]"))
     else        
         return Adaline(Float64[], 0.0, Float64[], false, η, num_iter, random_state, solver, batch_size, false, shuffle)
     end
@@ -31,7 +31,7 @@ end
 (m::Adaline)(x::AbstractVector) = linearactivation(net_input(m, x)) ≥ 0.5 ? 1 : 0
 
 function (m::Adaline)(X::Matrix, y::Vector; partial=false)
-    if m.solver == :SGD
+    if m.solver == :sgd
         if partial == true
             println("Partial fit for Adaline hasn't been implemented yet")
         else
@@ -59,7 +59,7 @@ function (m::Adaline)(X::Matrix, y::Vector; partial=false)
                 push!(m.losses, avg_loss)
             end
         end
-    elseif m.solver == :Batch
+    elseif m.solver == :batch
         if m.random_state !== nothing
             Random.seed!(m.random_state)
         end
@@ -77,7 +77,7 @@ function (m::Adaline)(X::Matrix, y::Vector; partial=false)
             loss = mean(errors.^2)
             push!(m.losses, loss)
         end
-    elseif m.solver == :MiniBatch
+    elseif m.solver == :minibatch
         println("MiniBatch algorithm for Adaline hasn't been implemented yet.")
     end
 end
