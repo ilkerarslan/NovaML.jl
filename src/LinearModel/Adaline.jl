@@ -12,7 +12,7 @@ mutable struct Adaline <: AbstractModel
     η::Float64
     num_iter::Int
     random_state::Union{Nothing, Int64}
-    optim_alg::Symbol
+    solver::Symbol
     batch_size::Int
     w_init::Bool
     shuffle::Bool
@@ -20,18 +20,18 @@ end
 
 
 function Adaline(; η=0.01, num_iter=100, random_state=nothing,
-            optim_alg=:SGD, batch_size=32, shuffle=true)
-    if !(optim_alg ∈ [:SGD, :Batch, :MiniBatch])
-        throw(ArgumentError("`optim_alg` should be in [:SGD, :Batch, :MiniBatch]"))
+                   solver=:SGD, batch_size=32, shuffle=true)
+    if !(solver ∈ [:SGD, :Batch, :MiniBatch])
+        throw(ArgumentError("`solver` should be in [:SGD, :Batch, :MiniBatch]"))
     else        
-        return Adaline(Float64[], 0.0, Float64[], false, η, num_iter, random_state, optim_alg, batch_size, false, shuffle)
+        return Adaline(Float64[], 0.0, Float64[], false, η, num_iter, random_state, solver, batch_size, false, shuffle)
     end
 end
 
 (m::Adaline)(x::AbstractVector) = linearactivation(net_input(m, x)) ≥ 0.5 ? 1 : 0
 
 function (m::Adaline)(X::Matrix, y::Vector; partial=false)
-    if m.optim_alg == :SGD
+    if m.solver == :SGD
         if partial == true
             println("Partial fit for Adaline hasn't been implemented yet")
         else
@@ -59,7 +59,7 @@ function (m::Adaline)(X::Matrix, y::Vector; partial=false)
                 push!(m.losses, avg_loss)
             end
         end
-    elseif m.optim_alg == :Batch
+    elseif m.solver == :Batch
         if m.random_state !== nothing
             Random.seed!(m.random_state)
         end
@@ -77,7 +77,7 @@ function (m::Adaline)(X::Matrix, y::Vector; partial=false)
             loss = mean(errors.^2)
             push!(m.losses, loss)
         end
-    elseif m.optim_alg == :MiniBatch
+    elseif m.solver == :MiniBatch
         println("MiniBatch algorithm for Adaline hasn't been implemented yet.")
     end
 end
