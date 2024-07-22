@@ -116,6 +116,7 @@ println("Test accuracy: $acc_tst")
 - ``StratifiedKFold``: Provides stratified k-fold cross-validator, ensuring that the proportion of samples for each class is roughly the same in each fold
 - ``train_test_split``: Split arrays or matrices into random train and test subsets
 - ``validation_curve``: Determine training and validation scores for varying parameter values, helping to assess how a model's performance changes with respect to a specific hyperparameter and aiding in hyperparameter tuning
+- ``GridSearchCV``: Perform exhaustive search over specified parameter values for an estimator. It implements a "fit" and a "score" method, and allows for efficient parallelization of parameter searches. GridSearchCV helps in finding the best combination of hyperparameters for a given model, optimizing its performance through cross-validated grid search over a parameter grid.
 
 ### MultiClass
 
@@ -166,6 +167,23 @@ rf = RandomForestClassifier(n_estimators=100, max_depth=5)
 rf(Xtrn, ytrn)
 
 ŷ = rf(Xtst)
+```
+
+### Support Vector Machines (SVM)
+
+- ``SVC``: Support Vector Classifier. Binary classification which supports linear and RBF kernels. Doesn't support multiclass classification yet. 
+
+```julia
+using NovaML.SVM: SVC
+
+# Create an SVC instance
+svc = SVC(kernel=:rbf, C=1.0, gamma=:scale)
+
+# Train the model
+svc(X_train, y_train)
+
+# Make predictions
+ypreds = svc(X_test)
 ```
 
 ### Dimensionality Reduction
@@ -224,21 +242,35 @@ pipe(Xtrn, ytrn)
 ŷ = pipe(Xtst) 
 ```
 
-## Support Vector Machines (SVM)
-
-- ``SVC``: Support Vector Classifier. Binary classification which supports linear and RBF kernels. Doesn't support multiclass classification yet. 
+### GridSearchCV
 
 ```julia
+using NovaML.PreProcessing: StandardScaler
 using NovaML.SVM: SVC
+using NovaML.PipeLines: Pipe
+using NovaML.ModelSelection: GridSearchCV
+scaler = StandardScaler()
+svc = SVC()
+pipe_svc = Pipe(scaler, svc)
 
-# Create an SVC instance
-svc = SVC(kernel=:rbf, C=1.0, gamma=:scale)
+param_range = [0.0001, 0.001, 0.01, 0.1]
 
-# Train the model
-svc(X_train, y_train)
+param_grid = [
+    [svc, (:C, param_range), (:kernel, [:linear])],
+    [svc, (:C, param_range), (:gamma, param_range), (:kernel, [:rbf])]
+]
 
-# Make predictions
-ypreds = svc(X_test)
+gs = GridSearchCV(
+    estimator=pipe_svc,
+    param_grid=param_grid,
+    scoring=accuracy_score,
+    cv=10,
+    refit=true
+)
+
+gs(X_train, y_train)
+println(gs.best_score)
+println(gs.best_params)
 ```
 
 ### Contributing

@@ -86,7 +86,7 @@ function (svc::SVC)(X::Matrix{Float64}, y::Vector{Int})
 
     # Check convergence
     if !Optim.converged(result)
-        @warn "Optimization did not converge. Consider increasing the number of iterations or adjusting parameters."
+        @warn "Optimization didn't converge. Increase iterations or adjust parameters."
     end
     
     # Extract support vectors
