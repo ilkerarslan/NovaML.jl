@@ -5,6 +5,7 @@ include("_methods.jl")
 
 export AbstractModel, AbstractMultiClass, AbstractScaler
 export linearactivation, sigmoid, net_input, softmax, default_score
+export _generate_param_combinations, _param_product, _set_params!
 
 include("Tree/Tree.jl")
 include("Ensemble/Ensemble.jl")
@@ -27,6 +28,5 @@ export Decomposition
 
 include("PipeLines/PipeLines.jl")
 export Pipelines
-
 
 end # of module NovaML

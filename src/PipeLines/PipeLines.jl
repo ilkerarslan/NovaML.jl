@@ -1,19 +1,19 @@
 module Pipelines
 
-export Pipe
+export pipe
 
-mutable struct Pipe
+mutable struct pipe
     steps::Vector{Any}
 end
 
-function Pipe(steps...)
-    return Pipe(collect(steps))
+function pipe(steps...)
+    return pipe(collect(steps))
 end
 
-function (pipe::Pipe)(X, y=nothing)
+function (p::pipe)(X, y=nothing)
     data = X
-    for (i, step) in enumerate(pipe.steps)
-        if i == length(pipe.steps) && y !== nothing
+    for (i, step) in enumerate(p.steps)
+        if i == length(p.steps) && y !== nothing
             # Last step with y available (usually the model)
             step(data, y)
         else
@@ -25,17 +25,17 @@ function (pipe::Pipe)(X, y=nothing)
 end
 
 # Helper method to get the last step (usually the model)
-function Base.last(pipe::Pipe)
-    return pipe.steps[end]
+function Base.last(p::pipe)
+    return p.steps[end]
 end
 
 # Pretty printing
-function Base.show(io::IO, pipe::Pipe)
-    println(io, "Pipe(")
-    for (i, step) in enumerate(pipe.steps)
+function Base.show(io::IO, p::pipe)
+    println(io, "pipe(")
+    for (i, step) in enumerate(p.steps)
         print(io, "  ")
         show(io, step)
-        if i < length(pipe.steps)
+        if i < length(p.steps)
             println(io, ",")
         else
             println(io)

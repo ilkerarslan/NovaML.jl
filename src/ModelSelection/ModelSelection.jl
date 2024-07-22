@@ -12,6 +12,7 @@ export cross_val_score, learning_curve, train_test_split, validation_curve
 
 
 include("GridSearchCV.jl")
-export GridSearchCV
+include("RandomSearchCV.jl")
+export GridSearchCV, RandomSearchCV
 
 end # of module ModelSelection
