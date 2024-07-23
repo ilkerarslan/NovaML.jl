@@ -1,7 +1,7 @@
-using Optim
+
 using LinearAlgebra
-using Distances
 using Statistics
+using Distances
 
 mutable struct SVC
     kernel::Symbol
@@ -25,14 +25,70 @@ mutable struct SVC
     end
 end
 
-function kernel_function(X::Matrix{Float64}, Y::Matrix{Float64}, kernel::Symbol, gamma::Union{Float64,Symbol})
+function kernel_matrix!(K::Matrix{Float64}, X::Matrix{Float64}, Y::Matrix{Float64}, kernel::Symbol, gamma::Union{Float64,Symbol})
     if kernel == :linear
-        return X * Y'
+        mul!(K, X, Y')
     elseif kernel == :rbf
         gamma_value = (gamma == :scale) ? 1.0 / size(X, 2) : gamma
-        return exp.(-gamma_value .* max.(pairwise(SqEuclidean(), X', Y', dims=2), 0.0))
+        pairwise!(K, SqEuclidean(), X', Y')
+        K .*= -gamma_value
+        @. K = exp(K)
     else
         error("Unsupported kernel: $kernel")
+    end
+end
+
+function smo_optimize!(alpha::Vector{Float64}, y::Vector{Float64}, K::Matrix{Float64}, C::Float64, tol::Float64, max_passes::Int)
+    n = length(y)
+    passes = 0
+    while passes < max_passes
+        num_changed_alphas = 0
+        for i in 1:n
+            Ei = sum(alpha .* y .* K[:, i]) - y[i]
+            if (y[i] * Ei < -tol && alpha[i] < C) || (y[i] * Ei > tol && alpha[i] > 0)
+                j = rand(1:n)
+                while j == i
+                    j = rand(1:n)
+                end
+                Ej = sum(alpha .* y .* K[:, j]) - y[j]
+                
+                alpha_i_old, alpha_j_old = alpha[i], alpha[j]
+                
+                if y[i] != y[j]
+                    L = max(0, alpha[j] - alpha[i])
+                    H = min(C, C + alpha[j] - alpha[i])
+                else
+                    L = max(0, alpha[i] + alpha[j] - C)
+                    H = min(C, alpha[i] + alpha[j])
+                end
+                
+                if L == H
+                    continue
+                end
+                
+                eta = 2 * K[i, j] - K[i, i] - K[j, j]
+                if eta >= 0
+                    continue
+                end
+                
+                alpha[j] = alpha[j] - (y[j] * (Ei - Ej)) / eta
+                alpha[j] = clamp(alpha[j], L, H)
+                
+                if abs(alpha[j] - alpha_j_old) < 1e-5
+                    continue
+                end
+                
+                alpha[i] = alpha[i] + y[i] * y[j] * (alpha_j_old - alpha[j])
+                
+                num_changed_alphas += 1
+            end
+        end
+        
+        if num_changed_alphas == 0
+            passes += 1
+        else
+            passes = 0
+        end
     end
 end
 
@@ -56,41 +112,16 @@ function (svc::SVC)(X::Matrix{Float64}, y::Vector{Int})
     sample_weights = [class_weights[c] for c in y]
     
     # Compute kernel matrix
-    K = kernel_function(X, X, svc.kernel, svc.gamma)
+    K = Matrix{Float64}(undef, n_samples, n_samples)
+    kernel_matrix!(K, X, X, svc.kernel, svc.gamma)
     
-    # Define the objective function (dual form)
-    function objective(alpha)
-        return 0.5 * (alpha' * (K .* (y_binary * y_binary')) * alpha) - sum(alpha)
-    end
+    # Initialize alpha
+    alpha = zeros(n_samples)
     
-    # Define the gradient of the objective function
-    function gradient!(G, alpha)
-        G .= (K .* (y_binary * y_binary')) * alpha .- 1
-    end
-    
-    # Define constraints
-    lower = zeros(n_samples)
-    upper = svc.C .* sample_weights
-    
-    # Solve the optimization problem
-    α₀ = fill(1e-6, n_samples)
-    result = optimize(
-        objective,
-        gradient!,
-        lower,
-        upper,
-        α₀,
-        Fminbox(LBFGS()),
-        Optim.Options(iterations=1000, time_limit=60.0, f_abstol=1e-8)
-    )
-
-    # Check convergence
-    if !Optim.converged(result)
-        @warn "Optimization didn't converge. Increase iterations or adjust parameters."
-    end
+    # Optimize using SMO algorithm
+    smo_optimize!(alpha, y_binary, K, svc.C, 1e-3, 100)
     
     # Extract support vectors
-    alpha = Optim.minimizer(result)
     sv_indices = findall(alpha .> 1e-5)
     svc.support_vectors = X[sv_indices, :]
     svc.dual_coef = alpha[sv_indices] .* y_binary[sv_indices]
@@ -103,15 +134,14 @@ function (svc::SVC)(X::Matrix{Float64}, y::Vector{Int})
 end
 
 function (svc::SVC)(X::Matrix{Float64}; type=nothing)
+    K = Matrix{Float64}(undef, size(X, 1), size(svc.support_vectors, 1))
+    kernel_matrix!(K, X, svc.support_vectors, svc.kernel, svc.gamma)
+    decision_values = K * svc.dual_coef .+ svc.intercept
+    
     if type == :probs
-        K = kernel_function(X, svc.support_vectors, svc.kernel, svc.gamma)
-        decision_values = K * svc.dual_coef .+ svc.intercept
         probabilities = 1 ./ (1 .+ exp.(-decision_values))
         return hcat(1 .- probabilities, probabilities)
     else
-        # decision function
-        K = kernel_function(X, svc.support_vectors, svc.kernel, svc.gamma)
-        decision_values = K * svc.dual_coef .+ svc.intercept
         return [decision_value > 0 ? svc.classes[2] : svc.classes[1] for decision_value in decision_values]
     end
 end
