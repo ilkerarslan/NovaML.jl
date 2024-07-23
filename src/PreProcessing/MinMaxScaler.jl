@@ -15,5 +15,5 @@ function (scaler::MinMaxScaler)(X::Matrix{<:Real})
         scaler.max = vec(maximum(X, dims=1))
         scaler.fitted = true
     end
-    return (X .- scaler.min') ./ (scaler.max .- scaler.min)'        
+    return (X .- scaler.min') ./ (scaler.max .- scaler.min)'
 end

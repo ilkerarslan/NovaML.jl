@@ -29,7 +29,7 @@ function (gs::GridSearchCV)(X, y)
     n_combinations = length(all_params)
     
     scores = zeros(n_combinations)
-    println("There are $n_combinations combinations.")
+    println("Evaluating $n_combinations combinations.")
     Threads.@threads for i in 1:n_combinations            
         params = all_params[i]
         model = deepcopy(gs.estimator)
