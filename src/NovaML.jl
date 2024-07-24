@@ -7,6 +7,10 @@ export AbstractModel, AbstractMultiClass, AbstractScaler
 export linearactivation, sigmoid, net_input, softmax, default_score
 export _generate_param_combinations, _param_product, _set_params!
 
+
+include("Datasets/Datasets.jl")
+export Datasets
+
 include("Tree/Tree.jl")
 include("Ensemble/Ensemble.jl")
 include("LinearModel/LinearModel.jl")

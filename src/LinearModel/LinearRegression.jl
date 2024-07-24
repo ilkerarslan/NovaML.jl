@@ -8,8 +8,7 @@ mutable struct LinearRegression <: AbstractModel
     b::Float64
     fit_intercept::Bool
     normalize::Bool
-    copy_X::Bool
-    n_jobs::Union{Int, Nothing}
+    copy_X::Bool    
     positive::Bool
     fitted::Bool
 
@@ -17,7 +16,6 @@ mutable struct LinearRegression <: AbstractModel
         fit_intercept::Bool=true,
         normalize::Bool=false,
         copy_X::Bool=true,
-        n_jobs::Union{Int, Nothing}=nothing,
         positive::Bool=false
     )
         new(
@@ -26,7 +24,6 @@ mutable struct LinearRegression <: AbstractModel
             fit_intercept,
             normalize,
             copy_X,
-            n_jobs,
             positive,
             false
         )
@@ -34,7 +31,7 @@ mutable struct LinearRegression <: AbstractModel
 end
 
 function (model::LinearRegression)(X::AbstractMatrix{T}, y::AbstractVector{T}) where T <: Real
-    n_samples, n_features = size(X)
+    n_samples, _ = size(X)
     
     if model.copy_X
         X = copy(X)
@@ -108,7 +105,6 @@ function Base.show(io::IO, model::LinearRegression)
     println(io, "  fit_intercept=$(model.fit_intercept),")
     println(io, "  normalize=$(model.normalize),")
     println(io, "  copy_X=$(model.copy_X),")
-    println(io, "  n_jobs=$(model.n_jobs),")
     println(io, "  positive=$(model.positive),")
     println(io, "  fitted=$(model.fitted)")
     print(io, ")")

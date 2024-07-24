@@ -92,15 +92,18 @@ function smo_optimize!(alpha::Vector{Float64}, y::Vector{Float64}, K::Matrix{Flo
     end
 end
 
-function (svc::SVC)(X::Matrix{Float64}, y::Vector{Int})
+function (svc::SVC)(X::Matrix{Float64}, y::AbstractVector)
     classes = sort(unique(y))
     @assert length(classes) == 2 "SVC currently supports only binary classification"
     
     n_samples, n_features = size(X)
     
+    # Convert BitVector to Vector{Int} if necessary
+    y_int = y isa BitVector ? Vector{Int}(y) : y
+    
     # Compute class weights
     if svc.class_weight == :balanced
-        class_weights = Dict(c => n_samples / (length(classes) * count(==(c), y)) for c in classes)
+        class_weights = Dict(c => n_samples / (length(classes) * count(==(c), y_int)) for c in classes)
     elseif isa(svc.class_weight, Dict)
         class_weights = svc.class_weight
     else
@@ -108,8 +111,8 @@ function (svc::SVC)(X::Matrix{Float64}, y::Vector{Int})
     end
     
     # Prepare labels
-    y_binary = 2.0 .* (y .== classes[2]) .- 1.0
-    sample_weights = [class_weights[c] for c in y]
+    y_binary = 2.0 .* (y_int .== classes[2]) .- 1.0
+    sample_weights = [class_weights[c] for c in y_int]
     
     # Compute kernel matrix
     K = Matrix{Float64}(undef, n_samples, n_samples)
@@ -132,6 +135,7 @@ function (svc::SVC)(X::Matrix{Float64}, y::Vector{Int})
     svc.classes = classes
     return svc
 end
+
 
 function (svc::SVC)(X::Matrix{Float64}; type=nothing)
     K = Matrix{Float64}(undef, size(X, 1), size(svc.support_vectors, 1))
