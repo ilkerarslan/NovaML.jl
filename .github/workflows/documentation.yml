@@ -18,18 +18,9 @@ jobs:
         with:
           version: '1.9'
       - name: Install dependencies
-        run: |
-          julia --project=docs/ -e '
-            using Pkg
-            Pkg.develop(PackageSpec(path=pwd()))
-            Pkg.instantiate()'
+        run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
       - name: Build and deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
-        run: |
-          julia --project=docs/ -e '
-            using Pkg
-            Pkg.status()
-            using Documenter
-            include("docs/make.jl")'
+        run: julia --project=docs/ docs/make.jl
