@@ -73,7 +73,7 @@ function load_boston(; return_X_y=false)
             "data" => X,
             "target" => vec(y),
             "feature_names" => feature_names,
-            "DESCR" => "Synthetic Boston House Prices dataset"
+            "DESCR" => "Boston House Prices dataset"
         )
     end
 end

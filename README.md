@@ -24,55 +24,81 @@ You can install NovaML.jl using Julia's package manager. From the Julia REPL, ty
 
 ## Usage
 
-The most prominent feature of NovaML is using functors (callable objects) to keep parameters as well as training and prediction. Assume ``model`` represents a supervised algorithm. The struct ``model`` keeps learned parameters and hyperparameters. the function ``model(X, y)`` trains the model. And ``model(Xnew)`` calculates the predictions of the model for the data. 
+The most prominent feature of NovaML is using functors (callable objects) to keep parameters as well as training and prediction. Assume ``model`` represents a supervised algorithm. The struct ``model`` keeps learned parameters and hyperparameters. It also behave as a function. 
 
-Here's a quick example of how to use NovaML.jl for a classification task:
+* ``model(X, y)`` trains the model. 
+* ``model(Xnew)`` calculates the predictions for `Xnew`. 
+
+Here's a quick example of how to use NovaML.jl for a binary classification task:
 
 ```julia
-using NovaML
+using NovaML.Datasets
+X, y = load_iris(return_X_y=true)
 
-# Load and preprocess data
-using RDatasets, DataFrames
+using NovaML.ModelSelection
+Xtrn, Xtst, ytrn, ytst = train_test_split(X, y, test_size=0.2)
 
-iris = dataset("datasets", "iris")
-X = iris[51:150, 1:4] |> Matrix
-y = [(s == "versicolor") ? 0 : 1 for s ∈ iris[51:150, 5]]
-
-using NovaML.ModelSelection: train_test_split
+using NovaML.ModelSelection
 Xtrn, Xtst, ytrn, ytst = train_test_split(X, y, test_size=0.2)
 
 # Scale features
-using NovaML.PreProcessing: StandardScaler
+using NovaML.PreProcessing
 scaler = StandardScaler()
 scaler.fitted # false
 
-# fit and transform
+# Fit and transform
 Xtrnstd = scaler(Xtrn) 
 # transform with the fitted model
 Xtststd = scaler(Xtst)
 
 # Train a model
-using NovaML.LinearModel: LogisticRegression
-model = LogisticRegression(η=0.1, num_iter=100)
+using NovaML.LinearModel
+lr = LogisticRegression(η=0.1, num_iter=100)
 
-# fit the model
-model(Xtrnstd, ytrn)
+using NovaML.MultiClass: OneVsRestClassifier
+ovr = OneVsRestClassifier(lr)
+
+# Fit the model
+ovr(Xtrnstd, ytrn)
 
 # Make predictions
-ŷtrn = model(Xtrnstd)
-ŷtst = model(Xtststd)
+ŷtrn = ovr(Xtrnstd)
+ŷtst = ovr(Xtststd)
 
 # Evaluate the model
-using NovaML.Metrics: accuracy_score
-
+using NovaML.Metrics
 acc_trn = accuracy_score(ytrn, ŷtrn);
 acc_tst = accuracy_score(ytst, ŷtst);
 
 println("Training accuracy: $acc_trn")
 println("Test accuracy: $acc_tst")
+# Training accuracy: 0.9833333333333333
+# Test accuracy: 0.9666666666666667
 ```
 
 ## Main Components
+
+### Datasets
+
+* `Boston Housing Data`
+* `Iris Data`
+* `Wisconsin Breast Cancer Data`
+
+```julia
+using NovaML.Datasets
+
+# Load data as a dictionary
+data = load_boston()
+#Dict{String, Any} with 4 entries:
+#  "feature_names" => ["CRIM", "ZN", "INDUS", "CHAS", "NOX", "RM", "AGE", "DIS", …
+#  "data"          => [-0.234473 0.498748 … 0.0908246 -0.252759; -0.916107 -2.407…
+#  "target"        => [-4.96729, 1.0265, -4.11056, -9.52761, 3.43768, -2.64256, 3…
+#  "DESCR"         => "Boston House Prices dataset" 
+
+# Load X and y separately
+X, y = load_boston(return_X_y=true)
+```
+
 ### PreProcessing
 
 - ``StandardScaler``: Standardize features by removing the mean and scaling to unit variance
@@ -104,60 +130,35 @@ println("Test accuracy: $acc_tst")
 - ``PCA``: Principal Component Analysis
 
 ### Metrics
+
 - ``accuracy_score``: Calculates the accuracy classification score, i.e., the proportion of correct predictions.
+- ``auc``: Computes the Area Under the Curve (AUC) for the Receiver Operating Characteristic (ROC) curve, evaluating the overall performance of a binary classifier.
 - ``confusion_matrix``: Computes a confusion matrix to evaluate the accuracy of a classification. It shows the counts of true positive, false positive, true negative, and false negative predictions.
 - ``mean_squared_error``, ``mse``: Computes the average squared difference between estimated and true values. mse is an alias for mean_squared_error.
 - ``r2_score``: Calculates the coefficient of determination (R²), measuring how well future samples are likely to be predicted by the model.
 - ``adj_r2_score``: Computes the adjusted R² score, which accounts for the number of predictors in the model, penalizing unnecessary complexity.
+- ``f1_score``: Computes the F1 score, which is the harmonic mean of precision and recall, providing a balance between the two.
+- ``matthews_corcoef``: Calculates the Matthews correlation coefficient (MCC), a measure of the quality of binary classifications, considering all four confusion matrix categories.
+- ``precision_score``: Computes the precision score, which is the ratio of true positive predictions to the total predicted positives.
+- ``recall_score``: Computes the recall score, which is the ratio of true positive predictions to the total actual positives.
+- ``roc_auc_score``: Computes the Area Under the Receiver Operating Characteristic Curve (ROC AUC), providing an aggregate measure of classifier performance.
+- ``roc_curve``: Produces the values (fpr, tpr) to plot the Receiver Operating Characteristic (ROC) curve, showing the trade-off between true positive rate and false positive rate at various threshold settings.
+
 
 ### ModelSelection
 
 - ``cross_val_score``: Apply cross validation score
+- ``GridSearchCV``: Perform exhaustive search over specified parameter values for an estimator.
 - ``learning_curve``: Generate learning curves to evaluate model performance as a function of the number of training samples, helping to diagnose bias and variance problems
+- ``RandomSearchCV``: Perform randomized search over specified parameter distributions for an estimator. RandomSearchCV is often more efficient than GridSearchCV for hyperparameter optimization, especially when the parameter space is large or when some parameters are more important than others.
 - ``StratifiedKFold``: Provides stratified k-fold cross-validator, ensuring that the proportion of samples for each class is roughly the same in each fold
 - ``train_test_split``: Split arrays or matrices into random train and test subsets
 - ``validation_curve``: Determine training and validation scores for varying parameter values, helping to assess how a model's performance changes with respect to a specific hyperparameter and aiding in hyperparameter tuning
-- ``GridSearchCV``: Perform exhaustive search over specified parameter values for an estimator. 
-- ``RandomSearchCV``: Perform randomized search over specified parameter distributions for an estimator. RandomSearchCV is often more efficient than GridSearchCV for hyperparameter optimization, especially when the parameter space is large or when some parameters are more important than others.
 
 ### MultiClass
 
 - ``MultiClassPerceptron``
 - ``OneVsRestClassifier``
-
-```julia
-# Data
-using RDatasets, DataFrames
-iris = dataset("datasets", "iris")
-X = iris[:, 1:4] |> Matrix
-y = iris.Species
-map_species = Dict(
-    "setosa" => 0,
-    "versicolor" => 1,
-    "virginica" => 2
-)
-y = [map_species[k] for k in y]
-
-using NovaML.ModelSelection: train_test_split
-Xtrn, Xtst, ytrn, ytst = train_test_split(X, y, test_size=0.2, random_state=1)
-
-# Assuming X and y are your multiclass data
-using NovaML.LinearModel: LogisticRegression
-using NovaML.MultiClass: OneVsRestClassifier
-lr = LogisticRegression()
-ovr = OneVsRestClassifier(lr)
-
-# fit the model
-ovr(Xtrn, ytrn)
-
-# Make predictions
-ŷtrn = ovr(Xtrn)
-ŷtst = ovr(Xtst)
-
-using NovaML.Metrics: accuracy_score
-accuracy_score(ytrn, ŷtrn)
-accuracy_score(ytst, ŷtst)
-```
 
 ### Ensemble Methods
 
@@ -231,10 +232,10 @@ ŷtst = Xtst |> sc |> pca |> lr
 It is also possible to create pipelines using NovaML's `Pipe` constructor:
 
  ```julia
-using NovaML.Pipelines: Pipe
+using NovaML.Pipelines: pipe
 
 # create a pipeline
-pipe = Pipe(
+pipe = pipe(
    StandardScaler(),
    PCA(n_components=2),
    LogisticRegression())
@@ -243,6 +244,8 @@ pipe = Pipe(
 pipe(Xtrn, ytrn)
 # make predictions
 ŷ = pipe(Xtst) 
+# make probability predictions
+ŷprobs = pipe(Xtst, type=:probs)
 ```
 
 ### GridSearchCV
