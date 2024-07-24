@@ -27,4 +27,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
-        run: julia --project=docs/ docs/make.jl
+        run: |
+          julia --project=docs/ -e '
+            using Pkg
+            Pkg.status()
+            using Documenter
+            include("docs/make.jl")'
