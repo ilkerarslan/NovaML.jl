@@ -1,7 +1,3 @@
-using Pkg
-Pkg.develop(PackageSpec(path=pwd()))
-Pkg.instantiate()
-
 using Documenter, NovaML
 
 makedocs(
@@ -30,10 +26,13 @@ makedocs(
             "Custom Models" => "advanced/custom_models.md",
             "Pipelines" => "advanced/pipelines.md",
         ],
-    ]
+    ],
+    build = "build",
+    source = "src",
 )
 
 deploydocs(
     repo = "github.com/ilkerarslan/NovaML.jl.git",
-    devbranch = "master"
+    devbranch = "master",
+    target = "build"
 )
