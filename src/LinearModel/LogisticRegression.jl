@@ -29,8 +29,6 @@ end
 
 (m::LogisticRegression)(x::AbstractVector) = sigmoid(net_input(m, x)) ≥ 0.5 ? 1 : 0
 
-(m::LogisticRegression)(X::AbstractMatrix) = [m(x) for x in eachrow(X)]
-
 function (m::LogisticRegression)(X::AbstractMatrix, y::AbstractVector)
     if m.random_state !== nothing
         Random.seed!(m.random_state)
@@ -119,4 +117,19 @@ function (m::LogisticRegression)(X::AbstractMatrix, y::AbstractVector)
         end
     end
     m.fitted = true
+end
+
+function (m::LogisticRegression)(X::AbstractMatrix; type=nothing)
+    if !m.fitted
+        throw(ErrorException("This LogisticRegression instance is not fitted yet. Call the model with training data before using it for predictions."))
+    end
+
+    z = net_input(m, X)
+    probabilities = sigmoid.(z)
+
+    if type == :probs
+        return hcat(1 .- probabilities, probabilities)
+    else
+        return probabilities .≥ 0.5
+    end
 end

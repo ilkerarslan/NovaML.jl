@@ -29,4 +29,7 @@ export Decomposition
 include("PipeLines/PipeLines.jl")
 export Pipelines
 
+include("Utils/Utils.jl")
+export Utils
+
 end # of module NovaML

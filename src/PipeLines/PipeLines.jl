@@ -10,14 +10,20 @@ function pipe(steps...)
     return pipe(collect(steps))
 end
 
-function (p::pipe)(X, y=nothing)
+function (p::pipe)(X, y=nothing; kwargs...)
     data = X
     for (i, step) in enumerate(p.steps)
-        if i == length(p.steps) && y !== nothing
-            # Last step with y available (usually the model)
-            step(data, y)
+        if i == length(p.steps)
+            # Last step (usually the model)
+            if y !== nothing
+                # Training
+                step(data, y)
+            else
+                # Prediction or transformation
+                return step(data; kwargs...)
+            end
         else
-            # Transformation step or prediction
+            # Transformation step
             data = step(data)
         end
     end
