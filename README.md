@@ -55,7 +55,7 @@ Xtststd = scaler(Xtst)
 using NovaML.LinearModel
 lr = LogisticRegression(η=0.1, num_iter=100)
 
-using NovaML.MultiClass: OneVsRestClassifier
+using NovaML.MultiClass
 ovr = OneVsRestClassifier(lr)
 
 # Fit the model
