@@ -1,6 +1,5 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-NovaML = "3f482e55-c8f2-4561-ba39-d69135401c3e"
 
 [compat]
 Documenter = "0.27"

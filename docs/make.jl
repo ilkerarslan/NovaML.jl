@@ -28,7 +28,7 @@ makedocs(
         ],
     ],
     build = "build",
-    source = "src",
+    source = "src"
 )
 
 deploydocs(
