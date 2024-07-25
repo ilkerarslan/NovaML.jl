@@ -80,9 +80,10 @@ println("Test accuracy: $acc_tst")
 
 ### Datasets
 
-* `Boston Housing Data`
-* `Iris Data`
-* `Wisconsin Breast Cancer Data`
+* `Boston Housing Data`: `load_boston`
+* `Iris Data`: `load_iris`
+* `Wisconsin Breast Cancer Data`: `load_breast_cancer`
+* `Wine Data`: `load_wine`
 
 ```julia
 using NovaML.Datasets
