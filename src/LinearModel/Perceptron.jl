@@ -25,21 +25,23 @@ function Perceptron(; η=0.01, num_iter=100, random_state=nothing,
     end
 end
 
-function (m::Perceptron)(X::Matrix, y::Vector)
+function (m::Perceptron)(X::Matrix, y::AbstractVector)
     if m.random_state !== nothing
         Random.seed!(m.random_state)
     end
     empty!(m.losses)
 
+    # Convert y to Float64 if it's a BitVector
+    y_float = y isa BitVector ? Float64.(y) : y
 
     # Initialize weights
     m.w = randn(size(X, 2)) ./ 100
-    n = length(y)
+    n = length(y_float)
     if m.solver == :sgd        
         for _ ∈ ProgressBar(1:m.num_iter)
             error = 0
             for i in 1:n
-                xi, yi = X[i, :], y[i]
+                xi, yi = X[i, :], y_float[i]
                 ŷ = m(xi)                
                 ∇ = m.η * (yi - ŷ)
                 m.w .+= ∇ * xi
@@ -51,7 +53,7 @@ function (m::Perceptron)(X::Matrix, y::Vector)
     elseif m.solver == :batch
         for _ ∈ ProgressBar(1:m.num_iter)
             ŷ = [m(X[i, :]) for i in 1:n]
-            ∇ = m.η * (y - ŷ)
+            ∇ = m.η * (y_float - ŷ)
             m.w .+= X' * ∇
             m.b += sum(∇)
             error = sum(abs.(∇))
@@ -63,7 +65,7 @@ function (m::Perceptron)(X::Matrix, y::Vector)
             shuffle_indices = Random.shuffle(1:n)
             for batch in Iterators.partition(shuffle_indices, m.batch_size)
                 X_batch = X[batch, :]
-                y_batch = y[batch]
+                y_batch = y_float[batch]
                 ŷ_batch = [m(X_batch[i, :]) for i in 1:length(batch)]
                 ∇ = m.η * (y_batch - ŷ_batch)
                 m.w .+= X_batch' * ∇

@@ -30,7 +30,7 @@ end
 
 (m::Adaline)(x::AbstractVector) = linearactivation(net_input(m, x)) ≥ 0.5 ? 1 : 0
 
-function (m::Adaline)(X::Matrix, y::Vector; partial=false)
+function (m::Adaline)(X::Matrix, y::AbstractVector; partial=false)
     if m.random_state !== nothing
         Random.seed!(m.random_state) 
     end
