@@ -147,7 +147,6 @@ function roc_auc_score(y_true::AbstractVector, y_score::AbstractVecOrMat;
     end
 end
 
-# Helper function for binary classification with probability scores
 function roc_auc_score(y_true::AbstractVector, y_score::AbstractVector)
     fpr, tpr, _ = roc_curve(y_true, y_score)
     return auc(fpr, tpr)
