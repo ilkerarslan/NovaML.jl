@@ -120,7 +120,8 @@ X, y = load_boston(return_X_y=true)
 
 ### Ensemble
 
-- ``RandomForestClassifier``: Random forest classifier
+- `RandomForestClassifier`: Random forest classifier
+- `VotingClassifier`: Soft voting / majority rule classifier
 
 ### Neighbors
 
@@ -144,7 +145,6 @@ X, y = load_boston(return_X_y=true)
 - ``recall_score``: Computes the recall score, which is the ratio of true positive predictions to the total actual positives.
 - ``roc_auc_score``: Computes the Area Under the Receiver Operating Characteristic Curve (ROC AUC), providing an aggregate measure of classifier performance.
 - ``roc_curve``: Produces the values (fpr, tpr) to plot the Receiver Operating Characteristic (ROC) curve, showing the trade-off between true positive rate and false positive rate at various threshold settings.
-
 
 ### ModelSelection
 
