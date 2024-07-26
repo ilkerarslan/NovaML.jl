@@ -1,34 +1,29 @@
 using Distances
 using Statistics
-using StatsBase: sample, Weights
-using DataStructures: PriorityQueue, enqueue!, dequeue!, peek
+using StatsBase: mode, sample, Weights
 
 import ...NovaML: AbstractModel
-
-# Custom KDTree implementation
-struct KDTreeNode
-    point::Vector{Float64}
-    index::Int
-    left::Union{KDTreeNode, Nothing}
-    right::Union{KDTreeNode, Nothing}
-    axis::Int
-end
-
-struct KDTree
-    root::KDTreeNode
-    leaf_size::Int
-end
 
 mutable struct KNeighborsClassifier <: AbstractModel
     n_neighbors::Int
     weights::Symbol
     algorithm::Symbol
     leaf_size::Int
+    p::Real
     metric::Metric
+    metric_params::Union{Dict, Nothing}
     n_jobs::Union{Int, Nothing}
-    tree::Union{KDTree, Nothing}
+    
+    # Attributes
+    classes_::Vector{Any}
+    n_features_in_::Int
+    n_samples_fit_::Int
+    outputs_2d_::Bool
+    
+    # Internal data
     X::Union{Matrix{Float64}, Nothing}
     y::Union{Vector, Nothing}
+    
     fitted::Bool
 
     function KNeighborsClassifier(;
@@ -36,133 +31,96 @@ mutable struct KNeighborsClassifier <: AbstractModel
         weights::Symbol = :uniform,
         algorithm::Symbol = :auto,
         leaf_size::Int = 30,
-        metric::Metric = Euclidean(),
+        p::Real = 2,
+        metric::Union{String, Metric} = "minkowski",
+        metric_params::Union{Dict, Nothing} = nothing,
         n_jobs::Union{Int, Nothing} = nothing
     )
         @assert n_neighbors > 0 "n_neighbors must be positive"
         @assert weights in [:uniform, :distance] "weights must be :uniform or :distance"
-        @assert algorithm in [:auto, :kd_tree, :brute] "Invalid algorithm"
+        @assert algorithm in [:auto, :brute] "Only :auto and :brute algorithms are currently supported"
         @assert leaf_size > 0 "leaf_size must be positive"
+        @assert p > 0 "p must be positive"
+        
+        if typeof(metric) == String
+            if metric == "minkowski"
+                metric = Minkowski(p)
+            elseif metric == "euclidean"
+                metric = Euclidean()
+            elseif metric == "manhattan"
+                metric = Cityblock()
+            else
+                error("Unsupported metric string: $metric")
+            end
+        end
 
-        new(n_neighbors, weights, algorithm, leaf_size, metric, n_jobs, nothing, nothing, nothing, false)
+        new(
+            n_neighbors, weights, algorithm, leaf_size, p, metric, metric_params, n_jobs,
+            Vector{Any}(), 0, 0, false, nothing, nothing, false
+        )
     end
 end
 
-# KDTree functions
-function build_kdtree(points::Matrix{Float64}, depth::Int, leaf_size::Int)
-    n_points, n_dims = size(points)
-    if n_points <= leaf_size
-        return KDTreeNode(points[1, :], 1, nothing, nothing, 0)
-    end
-
-    axis = (depth % n_dims) + 1
-    sorted_idx = sortperm(points[:, axis])
-    median_idx = div(n_points, 2)
-
-    left_points = points[sorted_idx[1:median_idx], :]
-    right_points = points[sorted_idx[median_idx+1:end], :]
-
-    return KDTreeNode(
-        points[sorted_idx[median_idx], :],
-        sorted_idx[median_idx],
-        build_kdtree(left_points, depth + 1, leaf_size),
-        build_kdtree(right_points, depth + 1, leaf_size),
-        axis
-    )
-end
-
-function knn_search(tree::KDTree, point::Vector{Float64}, k::Int, metric::Metric)
-    pq = PriorityQueue{Tuple{Vector{Float64}, Int}, Float64}()
-    search_kdtree!(tree.root, point, k, pq, metric)
-    return [item[2] for item in keys(pq)], collect(values(pq))
-end
-
-function search_kdtree!(node::KDTreeNode, point::Vector{Float64}, k::Int, pq::PriorityQueue{Tuple{Vector{Float64}, Int}, Float64}, metric::Metric)
-    if length(pq) < k || evaluate(metric, point, node.point) < peek(pq)[2]
-        if length(pq) == k
-            dequeue!(pq)
-        end
-        enqueue!(pq, (node.point, node.index), -evaluate(metric, point, node.point))
-    end
-
-    if node.left === nothing && node.right === nothing
-        return
-    end
-
-    if point[node.axis] <= node.point[node.axis]
-        if node.left !== nothing
-            search_kdtree!(node.left, point, k, pq, metric)
-        end
-        if node.right !== nothing && (length(pq) < k || abs(point[node.axis] - node.point[node.axis]) < peek(pq)[2])
-            search_kdtree!(node.right, point, k, pq, metric)
-        end
-    else
-        if node.right !== nothing
-            search_kdtree!(node.right, point, k, pq, metric)
-        end
-        if node.left !== nothing && (length(pq) < k || abs(point[node.axis] - node.point[node.axis]) < peek(pq)[2])
-            search_kdtree!(node.left, point, k, pq, metric)
-        end
-    end
-end
-
-# KNeighborsClassifier methods
 function (clf::KNeighborsClassifier)(X::Matrix{Float64}, y::Vector)
     clf.X = X
     clf.y = y
-
-    if clf.algorithm == :auto
-        clf.algorithm = size(X, 2) < 3 ? :kd_tree : :brute
-    end
-
-    if clf.algorithm == :kd_tree
-        root = build_kdtree(X, 0, clf.leaf_size)
-        clf.tree = KDTree(root, clf.leaf_size)
-    end
+    clf.n_features_in_ = size(X, 2)
+    clf.n_samples_fit_ = size(X, 1)
+    clf.classes_ = unique(y)
+    clf.outputs_2d_ = false  # Assuming 1D output for now
 
     clf.fitted = true
     return clf
 end
 
-function (clf::KNeighborsClassifier)(X::Matrix{Float64})
+function (clf::KNeighborsClassifier)(X::Matrix{Float64}; type=nothing)
     if !clf.fitted
         throw(ErrorException("This KNeighborsClassifier instance is not fitted yet. Call with training data before using it for predictions."))
     end
 
-    predictions = Vector{eltype(clf.y)}(undef, size(X, 1))
+    n_samples = size(X, 1)
+    predictions = Vector{eltype(clf.y)}(undef, n_samples)
 
-    for i in 1:size(X, 1)
-        if clf.algorithm == :brute
-            distances = [evaluate(clf.metric, X[i, :], clf.X[j, :]) for j in 1:size(clf.X, 1)]
-            sorted_indices = sortperm(distances)
-            neighbor_indices = sorted_indices[1:clf.n_neighbors]
-            neighbor_distances = distances[neighbor_indices]
-        else # kd_tree
-            neighbor_indices, neighbor_distances = knn_search(clf.tree, X[i, :], clf.n_neighbors, clf.metric)
-        end
+    if type == :probs
+        probas = zeros(Float64, n_samples, length(clf.classes_))
+    end
+
+    for i in 1:n_samples
+        distances = [evaluate(clf.metric, X[i, :], clf.X[j, :]) for j in 1:clf.n_samples_fit_]
+        sorted_indices = sortperm(distances)
+        neighbor_indices = sorted_indices[1:clf.n_neighbors]
+        neighbor_distances = distances[neighbor_indices]
 
         if clf.weights == :uniform
-            predictions[i] = mode(clf.y[neighbor_indices])
+            if type == :probs
+                for (idx, class) in enumerate(clf.classes_)
+                    probas[i, idx] = count(==(class), clf.y[neighbor_indices]) / clf.n_neighbors
+                end
+            else
+                predictions[i] = mode(clf.y[neighbor_indices])
+            end
         else # distance weighting
-            weights = 1 ./ neighbor_distances
-            predictions[i] = mode(sample(clf.y[neighbor_indices], Weights(weights), clf.n_neighbors))
+            weights = 1 ./ (neighbor_distances .+ eps())
+            if type == :probs
+                for (idx, class) in enumerate(clf.classes_)
+                    probas[i, idx] = sum(weights[clf.y[neighbor_indices] .== class]) / sum(weights)
+                end
+            else
+                predictions[i] = sample(clf.y[neighbor_indices], Weights(weights))
+            end
         end
     end
 
-    return predictions
-end
-
-# Helper functions
-function mode(x)
-    if length(x) == 1
-        return x[1]
+    if type == :probs
+        return probas
+    else
+        return predictions
     end
-    return argmax(map(y -> count(==(y), x), unique(x)))
 end
 
 function Base.show(io::IO, clf::KNeighborsClassifier)
     print(io, "KNeighborsClassifier(n_neighbors=$(clf.n_neighbors), ",
         "weights=$(clf.weights), algorithm=$(clf.algorithm), ",
-        "leaf_size=$(clf.leaf_size), metric=$(clf.metric), ",
-        "n_jobs=$(clf.n_jobs), fitted=$(clf.fitted))")
+        "leaf_size=$(clf.leaf_size), p=$(clf.p), metric=$(clf.metric), ",
+        "metric_params=$(clf.metric_params), n_jobs=$(clf.n_jobs), fitted=$(clf.fitted))")
 end
