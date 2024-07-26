@@ -1,6 +1,8 @@
 module Ensemble
 
 include("RandomForestClassifier.jl")
-export RandomForestClassifier
+include("VotingClassifier.jl")
+
+export RandomForestClassifier, VotingClassifier
 
 end

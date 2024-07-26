@@ -11,8 +11,9 @@ mutable struct Node
     right::Union{Node, Nothing}
     is_leaf::Bool
     class::Union{Int, Nothing}
+    class_counts::Vector{Int}  # New field to store class counts
 
-    Node() = new(nothing, nothing, nothing, nothing, false, nothing)
+    Node() = new(nothing, nothing, nothing, nothing, false, nothing, Int[])
 end
 
 mutable struct DecisionTreeClassifier <: AbstractModel
@@ -48,11 +49,52 @@ function (tree::DecisionTreeClassifier)(X::AbstractMatrix, y::AbstractVector)
     return tree
 end
 
-function (tree::DecisionTreeClassifier)(X::AbstractMatrix)
+function (tree::DecisionTreeClassifier)(X::AbstractMatrix; type=nothing)
     if !tree.fitted
         throw(ErrorException("This DecisionTreeClassifier instance is not fitted yet. Call the model with training data before using it for predictions."))
     end
-    return [predict_sample(tree, tree.root, x) for x in eachrow(X)]
+    
+    if type == :probs
+        return predict_proba(tree, X)
+    else
+        return [predict_sample(tree, tree.root, x) for x in eachrow(X)]
+    end
+end
+
+function predict_proba(tree::DecisionTreeClassifier, X::AbstractMatrix)
+    n_samples = size(X, 1)
+    probas = zeros(Float64, n_samples, tree.n_classes)
+    
+    for (i, x) in enumerate(eachrow(X))
+        leaf_counts = get_leaf_counts(tree, tree.root, x)
+        probas[i, :] = leaf_counts ./ sum(leaf_counts)
+    end
+    
+    return probas
+end
+
+function get_leaf_counts(tree::DecisionTreeClassifier, node::Node, x::AbstractVector)
+    if node.is_leaf
+        counts = zeros(Int, tree.n_classes)
+        class_index = findfirst(c -> c == node.class, tree.classes)
+        counts[class_index] = 1
+        return counts
+    end
+    
+    if x[node.feature_index] <= node.threshold
+        return get_leaf_counts(tree, node.left, x)
+    else
+        return get_leaf_counts(tree, node.right, x)
+    end
+end
+
+function create_leaf(y::AbstractVector, classes::Vector)
+    node = Node()
+    node.is_leaf = true
+    class_counts = [count(y .== c) for c in classes]
+    node.class = classes[argmax(class_counts)]
+    node.class_counts = class_counts
+    return node
 end
 
 function grow_tree(tree::DecisionTreeClassifier, X::AbstractMatrix, y::AbstractVector, depth::Int)
@@ -85,6 +127,9 @@ function grow_tree(tree::DecisionTreeClassifier, X::AbstractMatrix, y::AbstractV
     # Recursively build the left and right subtrees
     node.left = grow_tree(tree, X[left_mask, :], y[left_mask], depth + 1)
     node.right = grow_tree(tree, X[right_mask, :], y[right_mask], depth + 1)
+    
+    # Combine class counts from child nodes
+    node.class_counts = node.left.class_counts + node.right.class_counts
     
     return node
 end
@@ -123,13 +168,6 @@ end
 function gini_impurity(y::AbstractVector)
     n = length(y)
     return 1.0 - sum((count(y .== c) / n)^2 for c in unique(y))
-end
-
-function create_leaf(y::AbstractVector, classes::Vector)
-    node = Node()
-    node.is_leaf = true
-    node.class = classes[argmax([count(y .== c) for c in classes])]
-    return node
 end
 
 function predict_sample(tree::DecisionTreeClassifier, node::Node, x::AbstractVector)

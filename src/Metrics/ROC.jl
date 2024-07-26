@@ -78,12 +78,9 @@ function auc(x::AbstractVector, y::AbstractVector)
     return sum((y[1:end-1] .+ y[2:end]) ./ 2 .* dx)
 end
 
-
-# File: src/Metrics/ROC.jl
-
 function roc_auc_score(y_true::AbstractVector, y_score::AbstractVecOrMat;
-                       average::Union{String, Nothing}="macro",
-                       multi_class::String="raise",
+                       average::Union{Symbol, Nothing}=:macro,
+                       multiclass::Symbol=:raise,
                        labels::Union{AbstractVector, Nothing}=nothing)
 
     if y_score isa AbstractVector || size(y_score, 2) == 1
@@ -95,8 +92,8 @@ function roc_auc_score(y_true::AbstractVector, y_score::AbstractVecOrMat;
 
     n_classes = size(y_score, 2)
 
-    if multi_class == "raise" && n_classes > 2
-    throw(ArgumentError("multi_class must be in ['ovr', 'ovo'] for multiclass problems"))
+    if multiclass == :raise && n_classes > 2
+    throw(ArgumentError("multiclass must be in [:ovr, :ovo] for multiclass problems"))
     end
 
     if labels === nothing
@@ -109,7 +106,8 @@ function roc_auc_score(y_true::AbstractVector, y_score::AbstractVecOrMat;
     return auc(fpr, tpr)
     end
 
-    if multi_class == "ovr"
+    # currently multiclass doesn't work well. 
+    if multiclass == :ovr
     # One-vs-Rest
     auc_scores = Float64[]
     for (i, label) in enumerate(labels)
@@ -117,7 +115,7 @@ function roc_auc_score(y_true::AbstractVector, y_score::AbstractVecOrMat;
     fpr, tpr, _ = roc_curve(y_true_binary, y_score[:, i])
     push!(auc_scores, auc(fpr, tpr))
     end
-    elseif multi_class == "ovo"
+    elseif multiclass == :ovo
     # One-vs-One
     auc_scores = Float64[]
     n_classes = length(labels)
@@ -134,18 +132,18 @@ function roc_auc_score(y_true::AbstractVector, y_score::AbstractVecOrMat;
     end
     end
     else
-    throw(ArgumentError("multi_class must be in ['ovr', 'ovo']"))
+    throw(ArgumentError("multiclass must be in [:ovr, :ovo]"))
     end
 
-    if average == "macro"
-    return mean(auc_scores)
+    if average == :macro
+        return mean(auc_scores)
     elseif average == "weighted"
-    class_weights = [count(==(label), y_true) for label in labels]
-    return sum(auc_scores .* (class_weights ./ sum(class_weights)))
+        class_weights = [count(==(label), y_true) for label in labels]
+        return sum(auc_scores .* (class_weights ./ sum(class_weights)))
     elseif average === nothing
-    return auc_scores
+        return auc_scores
     else
-    throw(ArgumentError("average must be in ['macro', 'weighted'] or nothing"))
+    throw(ArgumentError("average must be in [:macro', :weighted] or nothing"))
     end
 end
 
