@@ -156,6 +156,34 @@ X, y = load_boston(return_X_y=true)
 - ``train_test_split``: Split arrays or matrices into random train and test subsets
 - ``validation_curve``: Determine training and validation scores for varying parameter values, helping to assess how a model's performance changes with respect to a specific hyperparameter and aiding in hyperparameter tuning
 
+
+```julia
+using Plots
+using NovaML.LinearModel: LogisticRegression
+using NovaML.Metrics: roc_curve, auc
+
+lr = LogisticRegression(random_state=1, solver=:lbfgs, λ=0.01)
+
+lr(Xtrn, ytrn)
+ŷ = lr(Xtst, type=:probs)[:, 2]
+
+fpr, tpr, _ = roc_curve(ytst, ŷ)
+roc_auc = auc(fpr, tpr)
+
+plot(fpr, tpr, color=:blue, 
+     linewidth=2,
+     title="Receiver Operator Characteristic (ROC) Curve",     
+     xlabel="False Positive Rate",
+     ylabel="True Positive Rate",
+     label="AUC: $(round(roc_auc, digits=2))")
+plot!([0, 1], [0, 1], color=:red, 
+      linestyle=:dash, label=nothing, linewidth=2)
+```
+
+
+![ROC Curve](/images/roc.png)
+
+
 ### MultiClass
 
 - ``MultiClassPerceptron``
