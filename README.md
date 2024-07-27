@@ -120,8 +120,9 @@ X, y = load_boston(return_X_y=true)
 
 ### Ensemble
 
-- `RandomForestClassifier`: Random forest classifier
-- `VotingClassifier`: Soft voting / majority rule classifier
+- `BaggingClassifier`: A meta-estimator that fits base classifiers on random subsets of the original dataset and aggregates their predictions to form a final prediction.
+- `RandomForestClassifier`: An ensemble learning method that constructs multiple decision trees during training and outputs the class that is the mode of the classes of the individual trees.
+- `VotingClassifier`: A classifier that combines multiple machine learning classifiers and uses a majority vote or the average predicted probabilities to predict the class labels.
 
 ### Neighbors
 
@@ -179,10 +180,6 @@ plot(fpr, tpr, color=:blue,
 plot!([0, 1], [0, 1], color=:red, 
       linestyle=:dash, label=nothing, linewidth=2)
 ```
-
-
-![ROC Curve](/images/roc.png)
-
 
 ### MultiClass
 
