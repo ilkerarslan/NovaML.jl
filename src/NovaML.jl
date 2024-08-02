@@ -4,7 +4,7 @@ include("_types.jl")
 include("_methods.jl")
 
 export AbstractModel, AbstractMultiClass, AbstractScaler
-export linearactivation, sigmoid, net_input, softmax, default_score
+export linearactivation, sigmoid, logit, net_input, softmax, default_score
 export _generate_param_combinations, _param_product, _set_params!
 
 include("Datasets/Datasets.jl")

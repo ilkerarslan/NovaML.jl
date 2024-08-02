@@ -9,6 +9,8 @@ sigmoid(z::AbstractArray) = 1 ./ (1 .+ exp.(-1*clamp.(z, -250, 250)))
 """Compute logistic sigmoid activation"""
 sigmoid(z) = 1. / (1. + exp(-1*clamp(z, -250, 250)))
 
+logit(p) = log(p / (1 - p))
+
 # Common methods
 """Calculate net input for AbstractModel"""
 net_input(m::AbstractModel, x::AbstractVector) = x'*m.w + m.b
