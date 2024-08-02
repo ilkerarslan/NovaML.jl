@@ -116,7 +116,8 @@ X, y = load_boston(return_X_y=true)
 
 ### Tree
 
-- ``DecisionTreeClassifier``: Decision tree for classification
+- `DecisionTreeClassifier`: Decision tree for classification
+- `DecisionTreeRegressor`: Decision tree for regression
 
 ### Ensemble
 

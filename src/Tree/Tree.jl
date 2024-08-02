@@ -1,6 +1,8 @@
 module Tree 
 
 include("DecisionTreeClassifier.jl")
-export DecisionTreeClassifier
+include("DecisionTreeRegressor.jl")
+
+export DecisionTreeClassifier, DecisionTreeRegressor
 
 end
