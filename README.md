@@ -107,6 +107,10 @@ X, y = load_boston(return_X_y=true)
 - ``LabelEncoder``: Encode categorical features as integers
 - ``OneHotEncoder``: Encode categorical features as one-hot vectors
 
+### FeatureExtraction
+
+- `CountVectorizer`: Convert a collection of text documents to a matrix of token counts, useful for text feature extraction
+
 ### LinearModels
 
 - ``LinearRegression``: Linear regression algorithm
