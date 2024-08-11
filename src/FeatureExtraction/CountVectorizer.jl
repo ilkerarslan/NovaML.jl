@@ -47,7 +47,7 @@ mutable struct CountVectorizer
     end
 end
 
-function (cv::CountVectorizer)(raw_documents::Vector{String})    
+function (cv::CountVectorizer)(raw_documents::AbstractVector{T} where T <: AbstractString)
     cv.vocabulary_ = _build_vocabulary(cv, raw_documents)
     cv.fitted = true
     result = _transform(cv, raw_documents)
@@ -78,7 +78,7 @@ function _build_analyzer(cv::CountVectorizer)
     end
 end
 
-function preprocess(cv::CountVectorizer, doc::String)
+function preprocess(cv::CountVectorizer, doc::AbstractString)
     if cv.preprocessor !== nothing
         doc = cv.preprocessor(doc)
     end
@@ -94,14 +94,14 @@ function preprocess(cv::CountVectorizer, doc::String)
             doc = Unicode.normalize(doc, :NFKD)
         end
     end
-    return doc
+    return String(doc)  # Convert to String to ensure consistency
 end
 
-function _tokenize(cv::CountVectorizer, doc::String)
+function _tokenize(cv::CountVectorizer, doc::AbstractString)
     if cv.tokenizer !== nothing
         tokens = cv.tokenizer(doc)
     else
-        tokens = String[lowercase(m.match) for m in eachmatch(r"\b\w+\b", doc)]
+        tokens = String[lowercase(String(m.match)) for m in eachmatch(r"\b\w+\b", doc)]
     end
     return tokens
 end
@@ -126,8 +126,7 @@ function _word_ngrams(cv::CountVectorizer, tokens::Vector{T}) where T <: Abstrac
     return ngrams
 end
 
-function _build_vocabulary(cv::CountVectorizer, raw_documents::Vector{String})
-    
+function _build_vocabulary(cv::CountVectorizer, raw_documents::AbstractVector{T} where T <: AbstractString)    
     analyzer = _build_analyzer(cv)
     vocabulary = Dict{String, Int}()
     document_counts = Dict{String, Int}()
@@ -160,25 +159,25 @@ function _build_vocabulary(cv::CountVectorizer, raw_documents::Vector{String})
     return vocabulary
 end
 
-function _char_ngrams(cv::CountVectorizer, text::String)
+function _char_ngrams(cv::CountVectorizer, text::AbstractString)
     min_n, max_n = cv.ngram_range
     ngrams = String[]
     for n in min_n:max_n
         for i in 1:(length(text) - n + 1)
-            push!(ngrams, text[i:(i+n-1)])
+            push!(ngrams, String(text[i:(i+n-1)]))
         end
     end
     return ngrams
 end
 
-function _char_wb_ngrams(cv::CountVectorizer, text::String)
+function _char_wb_ngrams(cv::CountVectorizer, text::AbstractString)
     min_n, max_n = cv.ngram_range
     ngrams = String[]
     for n in min_n:max_n
         for word in split(text)
             if length(word) > n
                 for i in 1:(length(word) - n + 1)
-                    push!(ngrams, word[i:(i+n-1)])
+                    push!(ngrams, String(word[i:(i+n-1)]))
                 end
             end
         end
@@ -186,7 +185,7 @@ function _char_wb_ngrams(cv::CountVectorizer, text::String)
     return ngrams
 end
 
-function _transform(cv::CountVectorizer, raw_documents::Vector{String})
+function _transform(cv::CountVectorizer, raw_documents::AbstractVector{T} where T <: AbstractString)
     analyzer = _build_analyzer(cv)
     n_samples = length(raw_documents)
     n_features = length(cv.vocabulary_)

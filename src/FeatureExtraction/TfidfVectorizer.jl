@@ -46,7 +46,7 @@ mutable struct TfidfVectorizer
     end
 end
 
-function (tfidf::TfidfVectorizer)(raw_documents::Vector{String})
+function (tfidf::TfidfVectorizer)(raw_documents::AbstractVector{T} where T <: AbstractString)
     if !tfidf.fitted
         X = tfidf.cv(raw_documents)
         tfidf.idf_ = _calculate_idf(tfidf, X)
@@ -84,7 +84,7 @@ function _calculate_idf(tfidf::TfidfVectorizer, X::AbstractMatrix)
     return idf
 end
 
-function _transform_new_documents(tfidf::TfidfVectorizer, raw_documents::Vector{String})
+function _transform_new_documents(tfidf::TfidfVectorizer, raw_documents::AbstractVector{T} where T <: AbstractString)
     analyzer = _build_analyzer(tfidf.cv)
     n_samples = length(raw_documents)
     n_features = length(tfidf.cv.vocabulary_)
