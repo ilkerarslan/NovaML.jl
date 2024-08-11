@@ -16,16 +16,18 @@ mutable struct LogisticRegression <: AbstractModel
     batch_size::Int
     λ::Float64  # Parameter for regularization
     tol::Float64  # Tolerance for stopping criterion
-    max_iter::Int  # Maximum number of iterations for L-BFGS
+    max_iter::Int  # Maximum number of iterations for L-BFGS and LIBLINEAR
 end
 
-function LogisticRegression(; η=0.01, num_iter=100, random_state=nothing, solver=:lbfgs, batch_size=32, λ=1e-4, tol=1e-4, max_iter=100)
-    if !(solver ∈ [:sgd, :batch, :minibatch, :lbfgs])
-        throw(ArgumentError("`solver` should be in [:sgd, :batch, :minibatch, :lbfgs]"))
+
+function LogisticRegression(; η=0.01, num_iter=100, random_state=nothing, solver=:lbfgs, batch_size=32, λ=1e-4, tol=1e-4, max_iter=1000)
+    if !(solver ∈ [:sgd, :batch, :minibatch, :lbfgs, :liblinear])
+        throw(ArgumentError("`solver` should be in [:sgd, :batch, :minibatch, :lbfgs, :liblinear]"))
     else
         return LogisticRegression(Float64[], 0.0, Float64[], false, η, num_iter, random_state, solver, batch_size, λ, tol, max_iter)
     end
 end
+
 
 (m::LogisticRegression)(x::AbstractVector) = sigmoid(net_input(m, x)) ≥ 0.5 ? 1 : 0
 
@@ -36,8 +38,9 @@ function (m::LogisticRegression)(X::AbstractMatrix, y::AbstractVector)
     empty!(m.losses)    
     n_samples, n_features = size(X)
 
-    if m.solver == :lbfgs
-        # L-BFGS solver
+    if m.solver == :liblinear
+        m.w, m.b = liblinear_solver(X, y, m.λ, m.tol, m.max_iter)
+    elseif m.solver == :lbfgs
         θ = vcat(zeros(n_features), 0.0)  # Initialize with zeros
         
         function f(θ)
@@ -132,4 +135,52 @@ function (m::LogisticRegression)(X::AbstractMatrix; type=nothing)
     else
         return probabilities .≥ 0.5
     end
+end
+
+# LIBLINEAR solver implementation
+function liblinear_solver(X::AbstractMatrix, y::AbstractVector, λ::Float64, tol::Float64, max_iter::Int)
+    n_samples, n_features = size(X)
+    α = zeros(n_samples)
+    w = zeros(n_features)
+    b = 0.0
+    C = 1 / (λ * n_samples)
+
+    # Convert y to {-1, 1}
+    y_binary = 2 .* y .- 1
+
+    # Precompute X * X'
+    Q = X * X'
+    QD = diag(Q)
+
+    for iter in 1:max_iter
+        max_violation = 0.0
+        for i in Random.shuffle(1:n_samples)
+            G = dot(Q[i, :], α .* y_binary) * y_binary[i] - 1
+            PG = 0
+            if α[i] == 0
+                PG = min(G, 0)
+            elseif α[i] == C
+                PG = max(G, 0)
+            else
+                PG = G
+            end
+
+            if abs(PG) > 1e-12
+                α_old = α[i]
+                α[i] = min(max(α[i] - G / QD[i], 0.0), C)
+                d = (α[i] - α_old) * y_binary[i]
+                w .+= d .* X[i, :]
+                max_violation = max(max_violation, abs(PG))
+            end
+        end
+        
+        if max_violation < tol
+            break
+        end
+    end
+
+    # Compute bias term
+    b = mean(y_binary .- X * w)
+
+    return w, b
 end
