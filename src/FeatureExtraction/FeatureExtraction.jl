@@ -1,7 +1,8 @@
 module FeatureExtraction
 
 include("CountVectorizer.jl")
+include("TfidfVectorizer.jl")
 
-export CountVectorizer
+export CountVectorizer, TfidfVectorizer
 
 end
