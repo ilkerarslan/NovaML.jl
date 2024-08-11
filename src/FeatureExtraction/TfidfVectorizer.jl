@@ -47,10 +47,15 @@ mutable struct TfidfVectorizer
 end
 
 function (tfidf::TfidfVectorizer)(raw_documents::Vector{String})
-    X = tfidf.cv(raw_documents)
-    tfidf.idf_ = _calculate_idf(tfidf, X)
-    tfidf.fitted = true
-    return _transform(tfidf, X)
+    if !tfidf.fitted
+        X = tfidf.cv(raw_documents)
+        tfidf.idf_ = _calculate_idf(tfidf, X)
+        tfidf.fitted = true
+        return _transform(tfidf, X)
+    else
+        # Handle transformation of new documents
+        return _transform_new_documents(tfidf, raw_documents)
+    end
 end
 
 function (tfidf::TfidfVectorizer)(X::AbstractMatrix; type::Symbol=:transform)
@@ -79,9 +84,46 @@ function _calculate_idf(tfidf::TfidfVectorizer, X::AbstractMatrix)
     return idf
 end
 
+function _transform_new_documents(tfidf::TfidfVectorizer, raw_documents::Vector{String})
+    analyzer = _build_analyzer(tfidf.cv)
+    n_samples = length(raw_documents)
+    n_features = length(tfidf.cv.vocabulary_)
+    
+    rows = Int[]
+    cols = Int[]
+    values = Float64[]
+
+    for (doc_idx, doc) in enumerate(raw_documents)
+        feature_counter = Dict{Int, Int}()
+        doc_terms = analyzer(doc)
+        for term in doc_terms
+            feature_idx = get(tfidf.cv.vocabulary_, term, 0)
+            if feature_idx != 0
+                feature_counter[feature_idx] = get(feature_counter, feature_idx, 0) + 1
+            end
+        end
+        
+        for (feature_idx, count) in feature_counter
+            push!(rows, doc_idx)
+            push!(cols, feature_idx)
+            tf = tfidf.cv.binary ? 1.0 : (tfidf.sublinear_tf ? 1.0 + log(count) : Float64(count))
+            idf = tfidf.use_idf ? tfidf.idf_[feature_idx] : 1.0
+            push!(values, tf * idf)
+        end
+    end
+    
+    X = sparse(rows, cols, values, n_samples, n_features)
+    
+    if tfidf.norm !== nothing
+        X = normalize(X, tfidf.norm)
+    end
+    
+    return X
+end
+
 function _transform(tfidf::TfidfVectorizer, X::AbstractMatrix)
     if tfidf.sublinear_tf
-        X = spdiagm(0 => 1 ./ (1 .+ log.(sum(X, dims=2)))) * X
+        X = X.nzval .= 1.0 .+ log.(X.nzval)
     end
     
     if tfidf.use_idf
