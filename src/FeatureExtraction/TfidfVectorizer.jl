@@ -137,14 +137,12 @@ function _transform(tfidf::TfidfVectorizer, X::AbstractMatrix)
     return X
 end
 
-# Extend Base methods
 Base.getproperty(tfidf::TfidfVectorizer, sym::Symbol) = 
     sym === :vocabulary ? getfield(tfidf, :cv).vocabulary_ : getfield(tfidf, sym)
 
 Base.setproperty!(tfidf::TfidfVectorizer, sym::Symbol, value) =
     sym === :vocabulary ? setfield!(getfield(tfidf, :cv), :vocabulary_, value) : setfield!(tfidf, sym, value)
 
-# Helper function for normalization
 function normalize(X::AbstractMatrix, norm::String)
     if norm == "l1"
         return X ./ sum(abs.(X), dims=2)
