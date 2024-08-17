@@ -1,6 +1,8 @@
 module Decomposition
 
+include("LatentDirichletAllocation.jl")
 include("PCA.jl")
-export PCA
+
+export LatentDirichletAllocation, PCA
 
 end
