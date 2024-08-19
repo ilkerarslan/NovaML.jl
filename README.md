@@ -110,7 +110,7 @@ X, y = load_boston(return_X_y=true)
 ### FeatureExtraction
 
 - `CountVectorizer`: Convert a collection of text documents to a matrix of token counts, useful for text feature extraction
-- `FeatureExtraction`: Transform a collection of raw documents to a matrix of TF-IDF features, combining the functionality of `CountVectorizer` with TF-IDF weighting 
+- `TfidfVectorizer`: Transform a collection of raw documents to a matrix of TF-IDF features, combining the functionality of `CountVectorizer` with TF-IDF weighting 
 
 ### LinearModels
 
