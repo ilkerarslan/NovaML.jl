@@ -10,14 +10,24 @@ mutable struct LinearRegression <: AbstractModel
     normalize::Bool
     copy_X::Bool    
     positive::Bool
+    solver::Symbol
+    η::Float64  
+    num_iter::Int  
+    tol::Float64  
     fitted::Bool
+    losses::Vector{Float64}  
 
     function LinearRegression(;
         fit_intercept::Bool=true,
         normalize::Bool=false,
         copy_X::Bool=true,
-        positive::Bool=false
+        positive::Bool=false,
+        solver::Symbol=:normal,
+        η::Float64=0.01,
+        num_iter::Int=1000,
+        tol::Float64=1e-4
     )
+        @assert solver in [:normal, :batch] "solver must be either :normal or :batch"
         new(
             Vector{Float64}(),
             0.0,
@@ -25,34 +35,64 @@ mutable struct LinearRegression <: AbstractModel
             normalize,
             copy_X,
             positive,
-            false
+            solver,
+            η,
+            num_iter,
+            tol,
+            false,
+            Float64[]
         )
     end
 end
 
-function (model::LinearRegression)(X::AbstractMatrix{T}, y::AbstractVector{T}) where T <: Real
-    n_samples, _ = size(X)
+function (model::LinearRegression)(X::AbstractVecOrMat{T}, y::AbstractVector{T}) where T <: Real
+    X_matrix = X isa AbstractVector ? reshape(X, :, 1) : X
+    n_samples, n_features = size(X_matrix)
     
     if model.copy_X
-        X = copy(X)
+        X_matrix = copy(X_matrix)
     end
     
     if model.normalize
-        X_mean = mean(X, dims=1)
-        X_std = std(X, dims=1)
-        X = (X .- X_mean) ./ X_std
+        X_mean = mean(X_matrix, dims=1)
+        X_std = std(X_matrix, dims=1)
+        X_matrix = (X_matrix .- X_mean) ./ X_std
     end
     
     if model.fit_intercept
-        X = hcat(ones(n_samples), X)
+        X_matrix = hcat(ones(n_samples), X_matrix)
+        n_features += 1
     end
     
-    if model.positive
-        # Use non-negative least squares
-        model.w = nnls(X, y)
-    else
-        # Use ordinary least squares
-        model.w = X \ y
+    empty!(model.losses)  
+    
+    if model.solver == :normal
+        if model.positive        
+            model.w = nnls(X_matrix, y)
+        else            
+            model.w = X_matrix \ y
+        end
+        
+        y_pred = X_matrix * model.w
+        mse = mean((y_pred - y).^2)
+        push!(model.losses, mse)
+    elseif model.solver == :batch
+        model.w = zeros(n_features)        
+        for _ in 1:model.num_iter
+            y_pred = X_matrix * model.w
+            gradient = (2/n_samples) * X_matrix' * (y_pred - y)
+            model.w -= model.η * gradient
+            
+            if model.positive
+                model.w = max.(model.w, 0)
+            end            
+            mse = mean((y_pred - y).^2)
+            push!(model.losses, mse)
+            
+            if length(model.losses) > 1 && abs(model.losses[end-1] - mse) < model.tol
+                break
+            end
+        end
     end
     
     if model.fit_intercept
@@ -66,18 +106,20 @@ function (model::LinearRegression)(X::AbstractMatrix{T}, y::AbstractVector{T}) w
     return model
 end
 
-function (model::LinearRegression)(X::AbstractMatrix{T}) where T <: Real
+function (model::LinearRegression)(X::AbstractVecOrMat{T}) where T <: Real
     if !model.fitted
         throw(ErrorException("This LinearRegression instance is not fitted yet. Call the model with training data before using it for predictions."))
     end
     
+    X_matrix = X isa AbstractVector ? reshape(X, :, 1) : X
+    
     if model.normalize
-        X_mean = mean(X, dims=1)
-        X_std = std(X, dims=1)
-        X = (X .- X_mean) ./ X_std
+        X_mean = mean(X_matrix, dims=1)
+        X_std = std(X_matrix, dims=1)
+        X_matrix = (X_matrix .- X_mean) ./ X_std
     end
     
-    return X * model.w .+ model.b
+    return X_matrix * model.w .+ model.b
 end
 
 function nnls(X::AbstractMatrix{T}, y::AbstractVector{T}) where T <: Real
@@ -106,6 +148,11 @@ function Base.show(io::IO, model::LinearRegression)
     println(io, "  normalize=$(model.normalize),")
     println(io, "  copy_X=$(model.copy_X),")
     println(io, "  positive=$(model.positive),")
-    println(io, "  fitted=$(model.fitted)")
+    println(io, "  solver=$(model.solver),")
+    println(io, "  η=$(model.η),")
+    println(io, "  num_iter=$(model.num_iter),")
+    println(io, "  tol=$(model.tol),")
+    println(io, "  fitted=$(model.fitted),")
+    println(io, "  n_losses=$(length(model.losses))")
     print(io, ")")
 end

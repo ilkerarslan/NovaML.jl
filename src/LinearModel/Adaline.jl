@@ -1,4 +1,4 @@
-using Random, Statistics, ProgressBars
+using Random, Statistics
 import ...NovaML: AbstractModel, linearactivation, net_input 
 
 mutable struct Adaline <: AbstractModel
@@ -62,7 +62,7 @@ function (m::Adaline)(X::Matrix, y::AbstractVector; partial=false)
             push!(m.losses, avg_loss)
         end
     elseif m.solver == :batch
-        for i ∈ ProgressBar(1:m.num_iter)
+        for i ∈ 1:m.num_iter
             ŷ = linearactivation(net_input(m, X))
             errors = (y .- ŷ)
             m.w .+= m.η .* 2.0 .* X'*errors ./ n
@@ -71,7 +71,7 @@ function (m::Adaline)(X::Matrix, y::AbstractVector; partial=false)
             push!(m.losses, loss)
         end
     elseif m.solver == :minibatch
-        for _ ∈ ProgressBar(1:m.num_iter)
+        for _ ∈ 1:m.num_iter
             if m.shuffle
                 idx = randperm(n)
                 X, y = X[idx, :], y[idx]

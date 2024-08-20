@@ -1,4 +1,4 @@
-using Random, ProgressBars
+using Random
 import ...NovaML: AbstractModel, net_input
 
 mutable struct Perceptron <: AbstractModel
@@ -38,7 +38,7 @@ function (m::Perceptron)(X::Matrix, y::AbstractVector)
     m.w = randn(size(X, 2)) ./ 100
     n = length(y_float)
     if m.solver == :sgd        
-        for _ ∈ ProgressBar(1:m.num_iter)
+        for _ ∈ 1:m.num_iter
             error = 0
             for i in 1:n
                 xi, yi = X[i, :], y_float[i]
@@ -51,7 +51,7 @@ function (m::Perceptron)(X::Matrix, y::AbstractVector)
             push!(m.losses, error)
         end        
     elseif m.solver == :batch
-        for _ ∈ ProgressBar(1:m.num_iter)
+        for _ ∈ 1:m.num_iter
             ŷ = [m(X[i, :]) for i in 1:n]
             ∇ = m.η * (y_float - ŷ)
             m.w .+= X' * ∇
@@ -60,7 +60,7 @@ function (m::Perceptron)(X::Matrix, y::AbstractVector)
             push!(m.losses, error)
         end
     elseif m.solver == :minibatch        
-        for _ ∈ ProgressBar(1:m.num_iter)
+        for _ ∈ 1:m.num_iter
             error = 0
             shuffle_indices = Random.shuffle(1:n)
             for batch in Iterators.partition(shuffle_indices, m.batch_size)

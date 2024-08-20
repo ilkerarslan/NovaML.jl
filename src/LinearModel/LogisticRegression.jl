@@ -1,4 +1,4 @@
-using Random, ProgressBars, Statistics, LinearAlgebra, Optim
+using Random, Statistics, LinearAlgebra, Optim
 import ...NovaML: AbstractModel, net_input, sigmoid
 
 mutable struct LogisticRegression <: AbstractModel
@@ -70,7 +70,7 @@ function (m::LogisticRegression)(X::AbstractMatrix, y::AbstractVector)
 
         if m.solver == :batch
             # Batch Gradient Descent
-            for _ in ProgressBar(1:m.num_iter)
+            for _ in 1:m.num_iter
                 ŷ = sigmoid.(net_input(m, X))
                 errors = y .- ŷ
                 # Update weights and bias
@@ -82,7 +82,7 @@ function (m::LogisticRegression)(X::AbstractMatrix, y::AbstractVector)
             end
         elseif m.solver == :sgd
             # Stochastic Gradient Descent
-            for _ in ProgressBar(1:m.num_iter)
+            for _ in 1:m.num_iter
                 for i in 1:n_samples
                     xi, yi = X[i, :], y[i]
                     ŷi = sigmoid(net_input(m, xi))
@@ -98,7 +98,7 @@ function (m::LogisticRegression)(X::AbstractMatrix, y::AbstractVector)
             end
         elseif m.solver == :minibatch
             # Mini-Batch Gradient Descent
-            for _ in ProgressBar(1:m.num_iter)
+            for _ in 1:m.num_iter
                 shuffle_indices = Random.shuffle(1:n_samples)
                 for batch_start in 1:m.batch_size:n_samples
                     batch_end = min(batch_start + m.batch_size - 1, n_samples)
