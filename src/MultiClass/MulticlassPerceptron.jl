@@ -1,4 +1,4 @@
-using Random, ProgressBars, Statistics
+using Random, Statistics
 import ...NovaML: AbstractModel, AbstractMultiClass, net_input 
 
 mutable struct MulticlassPerceptron <: AbstractMultiClass
@@ -49,7 +49,7 @@ function (m::MulticlassPerceptron)(X::Matrix, y::Vector)
     n = length(y)
 
     if m.solver == :sgd
-        for _ in ProgressBar(1:m.num_iter)
+        for _ in 1:m.num_iter
             error = 0
             for i in 1:n
                 xi, yi = X[i, :], y[i]
@@ -69,7 +69,7 @@ function (m::MulticlassPerceptron)(X::Matrix, y::Vector)
             push!(m.losses, error)
         end
     elseif m.solver == :batch
-        for _ in ProgressBar(1:m.num_iter)
+        for _ in 1:m.num_iter
             ŷ_scores = net_input(m, X)
             ŷ_indices = [argmax(score) for score in eachrow(ŷ_scores)]
             y_indices = [class_to_index[yi] for yi in y]
@@ -88,7 +88,7 @@ function (m::MulticlassPerceptron)(X::Matrix, y::Vector)
             push!(m.losses, error)
         end
     elseif m.solver == :minibatch
-        for _ in ProgressBar(1:m.num_iter)
+        for _ in 1:m.num_iter
             shuffle_indices = Random.shuffle(1:n)
             batch_errors = Int[]
             

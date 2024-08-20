@@ -19,8 +19,6 @@ function OneVsRestClassifier(base_estimator)
     return OneVsRestClassifier(base_estimator, [], [], false)    
 end
 
-
-
 function (m::OneVsRestClassifier)(X::AbstractMatrix, y::AbstractVector)
     m.classes = sort(unique(y))
     m.classifiers = [deepcopy(m.estimator) for _ in 1:length(m.classes)]
