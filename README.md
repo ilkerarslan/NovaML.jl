@@ -118,7 +118,7 @@ X, y = load_boston(return_X_y=true)
 - `LinearRegression`: Linear regression algorithm
 - `LogisticRegression`: Binary and multiclass logistic regression
 - `Perceptron`: Simple perceptron algorithm
-- ``: 
+- `RANSACRegression`: Robust regression using Random Sample Consensus (RANSAC) algorithm. It's particularly effective for fitting models in the presence of significant outliers in the data.
 
 ### Tree
 
