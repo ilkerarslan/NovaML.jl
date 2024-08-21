@@ -5,9 +5,7 @@ using LinearAlgebra
 
 import ...NovaML: AbstractModel
 
-export RANSACRegressor
-
-mutable struct RANSACRegressor <: AbstractModel
+mutable struct RANSACRegression <: AbstractModel
     estimator::Union{Nothing, AbstractModel}
     min_samples::Union{Int, Float64}
     residual_threshold::Union{Nothing, Float64}
@@ -31,7 +29,7 @@ mutable struct RANSACRegressor <: AbstractModel
     n_features_in_::Int
     feature_names_in_::Vector{String}
 
-    function RANSACRegressor(;
+    function RANSACRegression(;
         estimator=nothing,
         min_samples=nothing,
         residual_threshold=nothing,
@@ -52,7 +50,7 @@ mutable struct RANSACRegressor <: AbstractModel
     end
 end
 
-function (ransac::RANSACRegressor)(X::AbstractMatrix, y::AbstractVector; sample_weight=nothing)
+function (ransac::RANSACRegression)(X::AbstractMatrix, y::AbstractVector; sample_weight=nothing)
     n_samples, n_features = size(X)
     
     if ransac.estimator === nothing
@@ -171,14 +169,14 @@ function (ransac::RANSACRegressor)(X::AbstractMatrix, y::AbstractVector; sample_
     return ransac
 end
 
-function (ransac::RANSACRegressor)(X::AbstractMatrix)
+function (ransac::RANSACRegression)(X::AbstractMatrix)
     if ransac.estimator_ === nothing
-        throw(ErrorException("This RANSACRegressor instance is not fitted yet. Call with training data before using it for predictions."))
+        throw(ErrorException("This RANSACRegression instance is not fitted yet. Call with training data before using it for predictions."))
     end
     return ransac.estimator_(X)
 end
 
-function _calculate_residuals(ransac::RANSACRegressor, model::AbstractModel, X::AbstractMatrix, y::AbstractVector)
+function _calculate_residuals(ransac::RANSACRegression, model::AbstractModel, X::AbstractMatrix, y::AbstractVector)
     y_pred = model(X)
     if ransac.loss == "absolute_error"
         return abs.(y .- y_pred)
@@ -220,7 +218,7 @@ end
 
 # Helper methods
 
-function get_params(ransac::RANSACRegressor; deep::Bool=true)
+function get_params(ransac::RANSACRegression; deep::Bool=true)
     params = Dict{Symbol, Any}(
         :estimator => ransac.estimator,
         :min_samples => ransac.min_samples,
@@ -244,7 +242,7 @@ function get_params(ransac::RANSACRegressor; deep::Bool=true)
     return params
 end
 
-function set_params!(ransac::RANSACRegressor; kwargs...)
+function set_params!(ransac::RANSACRegression; kwargs...)
     for (key, value) in kwargs
         if startswith(string(key), "estimator__")
             if ransac.estimator === nothing
@@ -259,15 +257,15 @@ function set_params!(ransac::RANSACRegressor; kwargs...)
     return ransac
 end
 
-function score(ransac::RANSACRegressor, X::AbstractMatrix, y::AbstractVector)
+function score(ransac::RANSACRegression, X::AbstractMatrix, y::AbstractVector)
     if ransac.estimator_ === nothing
-        throw(ErrorException("This RANSACRegressor instance is not fitted yet. Call with training data before using it for scoring."))
+        throw(ErrorException("This RANSACRegression instance is not fitted yet. Call with training data before using it for scoring."))
     end
     return _score_model(ransac.estimator_, X, y)
 end
 
-function Base.show(io::IO, ransac::RANSACRegressor)
-    println(io, "RANSACRegressor(")
+function Base.show(io::IO, ransac::RANSACRegression)
+    println(io, "RANSACRegression(")
     println(io, "  estimator=$(ransac.estimator),")
     println(io, "  min_samples=$(ransac.min_samples),")
     println(io, "  residual_threshold=$(ransac.residual_threshold),")

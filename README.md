@@ -114,10 +114,11 @@ X, y = load_boston(return_X_y=true)
 
 ### LinearModels
 
-- ``LinearRegression``: Linear regression algorithm
-- ``LogisticRegression``: Binary and multiclass logistic regression
-- ``Perceptron``: Simple perceptron algorithm
-- ``Adaline``: Adaptive Linear Neuron
+- `Adaline`: Adaptive Linear Neuron
+- `LinearRegression`: Linear regression algorithm
+- `LogisticRegression`: Binary and multiclass logistic regression
+- `Perceptron`: Simple perceptron algorithm
+- ``: 
 
 ### Tree
 
