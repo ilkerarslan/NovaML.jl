@@ -6,7 +6,8 @@ include("LinearRegression.jl")
 include("LogisticRegression.jl")
 include("Perceptron.jl")
 include("RANSACRegression.jl")
+include("Ridge.jl")
 
-export Adaline, Lasso, LinearRegression, LogisticRegression, Perceptron, RANSACRegression
+export Adaline, Lasso, LinearRegression, LogisticRegression, Perceptron, RANSACRegression, Ridge
 
 end # of module LinearModel
