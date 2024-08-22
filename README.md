@@ -115,6 +115,7 @@ X, y = load_boston(return_X_y=true)
 ### LinearModels
 
 - `Adaline`: Adaptive Linear Neuron
+- `Lasso`: Linear Model trained with L1 prior as regularizer, useful for producing sparse models
 - `LinearRegression`: Linear regression algorithm
 - `LogisticRegression`: Binary and multiclass logistic regression
 - `Perceptron`: Simple perceptron algorithm
