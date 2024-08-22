@@ -26,8 +26,8 @@ You can install NovaML.jl using Julia's package manager. From the Julia REPL, ty
 
 The most prominent feature of NovaML is using functors (callable objects) to keep parameters as well as training and prediction. Assume ``model`` represents a supervised algorithm. The struct ``model`` keeps learned parameters and hyperparameters. It also behave as a function. 
 
-* ``model(X, y)`` trains the model. 
-* ``model(Xnew)`` calculates the predictions for `Xnew`. 
+* `model(X, y)` trains the model. 
+* `model(Xnew)` calculates the predictions for `Xnew`. 
 
 Here's a quick example of how to use NovaML.jl for a binary classification task:
 
@@ -103,9 +103,9 @@ X, y = load_boston(return_X_y=true)
 ### PreProcessing
 
 - ``StandardScaler``: Standardize features by removing the mean and scaling to unit variance
-- ``MinMaxScaler``: Scale features to a given range
-- ``LabelEncoder``: Encode categorical features as integers
-- ``OneHotEncoder``: Encode categorical features as one-hot vectors
+- `MinMaxScaler`: Scale features to a given range
+- `LabelEncoder`: Encode categorical features as integers
+- `OneHotEncoder`: Encode categorical features as one-hot vectors
 
 ### FeatureExtraction
 
@@ -135,11 +135,13 @@ X, y = load_boston(return_X_y=true)
 
 ### Neighbors
 
-- ``KNeighborsClassifier``: K-nearest neighbors classifier
+- `KNeighborsClassifier`: K-nearest neighbors classifier
 
 ### Decomposition
 
-- ``PCA``: Principal Component Analysis
+- `LatentDirichletAllocation`: A generative statistical model that allows sets of observations to be explained by unobserved groups. It's commonly used for topic modeling in natural language processing.
+- `PCA`: Principal Component Analysis, a dimensionality reduction technique that identifies the axes of maximum variance in high-dimensional data and projects it onto a lower-dimensional subspace.
+
 
 ### Metrics
 
@@ -159,13 +161,13 @@ X, y = load_boston(return_X_y=true)
 
 ### ModelSelection
 
-- ``cross_val_score``: Apply cross validation score
-- ``GridSearchCV``: Perform exhaustive search over specified parameter values for an estimator.
-- ``learning_curve``: Generate learning curves to evaluate model performance as a function of the number of training samples, helping to diagnose bias and variance problems
-- ``RandomSearchCV``: Perform randomized search over specified parameter distributions for an estimator. RandomSearchCV is often more efficient than GridSearchCV for hyperparameter optimization, especially when the parameter space is large or when some parameters are more important than others.
-- ``StratifiedKFold``: Provides stratified k-fold cross-validator, ensuring that the proportion of samples for each class is roughly the same in each fold
-- ``train_test_split``: Split arrays or matrices into random train and test subsets
-- ``validation_curve``: Determine training and validation scores for varying parameter values, helping to assess how a model's performance changes with respect to a specific hyperparameter and aiding in hyperparameter tuning
+- `cross_val_score`: Apply cross validation score
+- `GridSearchCV`: Perform exhaustive search over specified parameter values for an estimator.
+- `learning_curve`: Generate learning curves to evaluate model performance as a function of the number of training samples, helping to diagnose bias and variance problems
+- `RandomSearchCV`: Perform randomized search over specified parameter distributions for an estimator. RandomSearchCV is often more efficient than GridSearchCV for hyperparameter optimization, especially when the parameter space is large or when some parameters are more important than others.
+- `StratifiedKFold`: Provides stratified k-fold cross-validator, ensuring that the proportion of samples for each class is roughly the same in each fold
+- `train_test_split`: Split arrays or matrices into random train and test subsets
+- `validation_curve`: Determine training and validation scores for varying parameter values, helping to assess how a model's performance changes with respect to a specific hyperparameter and aiding in hyperparameter tuning
 
 ```julia
 using Plots
@@ -192,8 +194,8 @@ plot!([0, 1], [0, 1], color=:red,
 
 ### MultiClass
 
-- ``MultiClassPerceptron``
-- ``OneVsRestClassifier``
+- `MulticlassPerceptron`: An extension of the binary perceptron algorithm for multi-class classification problems. It learns a linear decision boundary for each class and updates weights based on misclassifications.
+- `OneVsRestClassifier`: A strategy for multi-class classification that fits one binary classifier per class, treating the class as positive and all others as negative. It's versatile and can be used with any base binary classifier.
 
 ### Ensemble Methods
 
