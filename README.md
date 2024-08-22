@@ -142,18 +142,19 @@ X, y = load_boston(return_X_y=true)
 
 ### Metrics
 
-- ``accuracy_score``: Calculates the accuracy classification score, i.e., the proportion of correct predictions.
-- ``auc``: Computes the Area Under the Curve (AUC) for the Receiver Operating Characteristic (ROC) curve, evaluating the overall performance of a binary classifier.
-- ``confusion_matrix``: Computes a confusion matrix to evaluate the accuracy of a classification. It shows the counts of true positive, false positive, true negative, and false negative predictions.
-- ``mean_squared_error``, ``mse``: Computes the average squared difference between estimated and true values. mse is an alias for mean_squared_error.
-- ``r2_score``: Calculates the coefficient of determination (R²), measuring how well future samples are likely to be predicted by the model.
-- ``adj_r2_score``: Computes the adjusted R² score, which accounts for the number of predictors in the model, penalizing unnecessary complexity.
-- ``f1_score``: Computes the F1 score, which is the harmonic mean of precision and recall, providing a balance between the two.
-- ``matthews_corcoef``: Calculates the Matthews correlation coefficient (MCC), a measure of the quality of binary classifications, considering all four confusion matrix categories.
-- ``precision_score``: Computes the precision score, which is the ratio of true positive predictions to the total predicted positives.
-- ``recall_score``: Computes the recall score, which is the ratio of true positive predictions to the total actual positives.
-- ``roc_auc_score``: Computes the Area Under the Receiver Operating Characteristic Curve (ROC AUC), providing an aggregate measure of classifier performance.
-- ``roc_curve``: Produces the values (fpr, tpr) to plot the Receiver Operating Characteristic (ROC) curve, showing the trade-off between true positive rate and false positive rate at various threshold settings.
+- `accuracy_score`: Calculates the accuracy classification score, i.e., the proportion of correct predictions.
+- `auc`: Computes the Area Under the Curve (AUC) for the Receiver Operating Characteristic (ROC) curve, evaluating the overall performance of a binary classifier.
+- `confusion_matrix`: Computes a confusion matrix to evaluate the accuracy of a classification. It shows the counts of true positive, false positive, true negative, and false negative predictions.
+- `mean_absolute_error`, `mae`: Computes the average absolute difference between estimated and true values. This metric is robust to outliers and provides a linear measure of error. `mae` is an alias for `mean_absolute_error`.
+- `mean_squared_error`, `mse`: Computes the average squared difference between estimated and true values. `mse` is an alias for `mean_squared_error`.
+- `r2_score`: Calculates the coefficient of determination (R²), measuring how well future samples are likely to be predicted by the model.
+- `adj_r2_score`: Computes the adjusted R² score, which accounts for the number of predictors in the model, penalizing unnecessary complexity.
+- `f1_score`: Computes the F1 score, which is the harmonic mean of precision and recall, providing a balance between the two.
+- `matthews_corcoef`: Calculates the Matthews correlation coefficient (MCC), a measure of the quality of binary classifications, considering all four confusion matrix categories.
+- `precision_score`: Computes the precision score, which is the ratio of true positive predictions to the total predicted positives.
+- `recall_score`: Computes the recall score, which is the ratio of true positive predictions to the total actual positives.
+- `roc_auc_score`: Computes the Area Under the Receiver Operating Characteristic Curve (ROC AUC), providing an aggregate measure of classifier performance.
+- `roc_curve`: Produces the values (fpr, tpr) to plot the Receiver Operating Characteristic (ROC) curve, showing the trade-off between true positive rate and false positive rate at various threshold settings.
 
 ### ModelSelection
 
@@ -164,7 +165,6 @@ X, y = load_boston(return_X_y=true)
 - ``StratifiedKFold``: Provides stratified k-fold cross-validator, ensuring that the proportion of samples for each class is roughly the same in each fold
 - ``train_test_split``: Split arrays or matrices into random train and test subsets
 - ``validation_curve``: Determine training and validation scores for varying parameter values, helping to assess how a model's performance changes with respect to a specific hyperparameter and aiding in hyperparameter tuning
-
 
 ```julia
 using Plots
