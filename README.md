@@ -80,10 +80,11 @@ println("Test accuracy: $acc_tst")
 
 ### Datasets
 
-* `Boston Housing Data`: `load_boston`
-* `Iris Data`: `load_iris`
-* `Wisconsin Breast Cancer Data`: `load_breast_cancer`
-* `Wine Data`: `load_wine`
+- `load_boston`: Loads the Boston Housing dataset, a classic regression problem. It contains information about housing in the Boston area, with 13 features and a target variable representing median home values.
+- `load_iris`: Provides access to the famous Iris flower dataset, useful for classification tasks. It includes 150 samples with 4 features each, categorized into 3 different species of Iris.
+- `load_breast_cancer`: Loads the Wisconsin Breast Cancer dataset, a binary classification problem. It contains features computed from digitized images of breast mass, with the goal of predicting whether a tumor is malignant or benign.
+- `load_wine`: Offers the Wine recognition dataset, suitable for multi-class classification. It includes 13 features derived from chemical analysis of wines from three different cultivars in Italy.
+- `make_blobs`: Generates isotropic Gaussian blobs for clustering or classification tasks. This function allows you to create synthetic datasets with a specified number of samples, features, and centers, useful for testing and benchmarking algorithms.
 
 ```julia
 using NovaML.Datasets
