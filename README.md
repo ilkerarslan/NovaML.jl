@@ -131,6 +131,7 @@ X, y = load_boston(return_X_y=true)
 - `BaggingClassifier`: A meta-estimator that fits base classifiers on random subsets of the original dataset and aggregates their predictions to form a final prediction.
 - `GradientBoostingClassifier`: An ensemble method that builds an additive model in a forward stage-wise fashion, allowing for the optimization of arbitrary differentiable loss functions. It uses decision trees as base learners and combines them to create a strong predictive model.
 - `RandomForestClassifier`: An ensemble learning method that constructs multiple decision trees during training and outputs the class that is the mode of the classes of the individual trees.
+- `RandomForestRegressor`: An ensemble method that builds multiple decision trees for regression tasks and predicts by averaging their outputs. It combines bagging with random feature selection to create a robust, accurate model that often resists overfitting.
 - `VotingClassifier`: A classifier that combines multiple machine learning classifiers and uses a majority vote or the average predicted probabilities to predict the class labels.
 
 ### Neighbors
