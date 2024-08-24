@@ -32,6 +32,9 @@ export Tree, Ensemble, LinearModel, MultiClass, Neighbors, SVM
 include("Decomposition/Decomposition.jl")
 export Decomposition
 
+include("Cluster/Cluster.jl")
+export Cluster
+
 include("PipeLines/PipeLines.jl")
 export Pipelines
 
