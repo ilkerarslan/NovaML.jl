@@ -1,7 +1,8 @@
 module Cluster
 
+include("AgglomerativeClustering.jl")
 include("KMeans.jl")
 
-export KMeans
+export AgglomerativeClustering, KMeans
 
 end
