@@ -2,7 +2,7 @@ using Documenter, NovaML
 
 makedocs(
     sitename = "NovaML.jl",
-    Documenter.HTML(),
+    format = Documenter.HTML(),
     modules = [NovaML],
     pages = [
         "Home" => "index.md",
@@ -15,7 +15,7 @@ makedocs(
         "Contributing" => "contributing.md"
     ]
 )
-println("Deploying documentation...")
+
 deploydocs(
     repo = "github.com/ilkerarslan/NovaML.jl.git",
 )
