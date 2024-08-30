@@ -75,6 +75,3 @@ println("Test accuracy: $acc_tst")
 # Training accuracy: 0.9833333333333333
 # Test accuracy: 0.9666666666666667
 ```
-
-# New header
-# Documentation
