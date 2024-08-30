@@ -1,8 +1,9 @@
 module Cluster
 
 include("AgglomerativeClustering.jl")
+include("DBSCAN.jl")
 include("KMeans.jl")
 
-export AgglomerativeClustering, KMeans
+export AgglomerativeClustering, DBSCAN, KMeans
 
 end
