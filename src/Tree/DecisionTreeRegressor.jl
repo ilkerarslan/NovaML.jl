@@ -3,8 +3,6 @@ using Statistics
 
 import ...NovaML: AbstractModel
 
-export DecisionTreeRegressor
-
 mutable struct RegressorNode
     feature_index::Union{Int, Nothing}
     threshold::Union{Float64, Nothing}

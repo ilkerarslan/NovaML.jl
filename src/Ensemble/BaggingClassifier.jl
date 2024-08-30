@@ -1,5 +1,3 @@
-# File: src/Ensemble/BaggingClassifier.jl
-
 using Random
 using Statistics
 import ...NovaML: AbstractModel

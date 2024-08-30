@@ -1,17 +1,3 @@
-"""
-    mean_squared_error(y_true, y_pred; sample_weight=nothing, multioutput="uniform_average")
-
-Compute the mean squared error (MSE) between true values and predictions.
-
-# Arguments
-- `y_true`: Array of true values
-- `y_pred`: Array of predicted values
-- `sample_weight`: Optional array of sample weights
-- `multioutput`: String specifying averaging method for multioutput case
-
-# Returns
-- The mean squared error value(s)
-"""
 function mean_squared_error(y_true::AbstractArray, y_pred::AbstractArray; 
                             sample_weight=nothing, multioutput="uniform_average")
     if size(y_true) != size(y_pred)

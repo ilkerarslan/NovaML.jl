@@ -1,24 +1,6 @@
 using Statistics
 using LinearAlgebra
 
-"""
-    f1_score(y_true, y_pred; labels=nothing, pos_label=1, average="binary", sample_weight=nothing, zero_division="warn")
-
-Compute the F1 score, also known as balanced F-score or F-measure.
-
-Parameters:
-- y_true: Ground truth (correct) target values.
-- y_pred: Estimated targets as returned by a classifier.
-- labels: The set of labels to include when average != "binary".
-- pos_label: The class to report if average="binary" and the data is binary.
-- average: This parameter is required for multiclass/multilabel targets. 
-           Options: "micro", "macro", "samples", "weighted", "binary" or nothing.
-- sample_weight: Sample weights.
-- zero_division: Sets the value to return when there is a zero division.
-
-Returns:
-- F1 score (float or array of floats)
-"""
 function f1_score(y_true, y_pred; 
                   labels=nothing, 
                   pos_label=1, 

@@ -1,20 +1,5 @@
 using StatsBase
-    
-"""
-    confusion_matrix(y_true, y_pred; labels=nothing, sample_weight=nothing, normalize=nothing)
-
-Compute confusion matrix to evaluate the accuracy of a classification.
-
-Parameters:
-- `y_true`: Vector of true labels
-- `y_pred`: Vector of predicted labels
-- `labels`: Optional vector of label values to include in the matrix
-- `sample_weight`: Optional vector of sample weights
-- `normalize`: Optional normalization strategy ('true', 'pred', 'all', or nothing)
-
-Returns:
-- Confusion matrix as a 2D array
-"""
+  
 function confusion_matrix(y_true, y_pred; 
                           labels=nothing, 
                           sample_weight=nothing, 

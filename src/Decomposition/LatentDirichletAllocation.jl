@@ -4,8 +4,6 @@ using SparseArrays
 using SpecialFunctions: digamma
 using Distributions: Gamma
 
-export LatentDirichletAllocation
-
 mutable struct LatentDirichletAllocation
     n_components::Int
     doc_topic_prior::Union{Float64, Nothing}

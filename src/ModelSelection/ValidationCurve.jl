@@ -1,5 +1,3 @@
-# File: src/ModelSelection/ValidationCurve.jl
-
 using Statistics
 using Random
 

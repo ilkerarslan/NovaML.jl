@@ -4,8 +4,6 @@ import StatsBase
 
 import ...NovaML: default_score
 
-export cross_val_score
-
 function cross_val_score(estimator, X, y; cv=5, scoring=nothing, n_jobs=nothing)
     n_samples = size(X, 1)
     

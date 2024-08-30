@@ -1,9 +1,5 @@
-# File: src/Tree/DecisionTreeClassifier.jl
-
 using Random
 import ...NovaML: AbstractModel
-
-export DecisionTreeClassifier
 
 mutable struct Node
     feature_index::Union{Int, Nothing}

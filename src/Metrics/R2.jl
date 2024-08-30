@@ -1,19 +1,5 @@
 using Statistics
 
-"""
-    r2_score(y_true, y_pred; sample_weight=nothing, multioutput="uniform_average")
-
-Compute the coefficient of determination (R²) between true values and predictions.
-
-# Arguments
-- `y_true`: Array of true values
-- `y_pred`: Array of predicted values
-- `sample_weight`: Optional array of sample weights
-- `multioutput`: String specifying averaging method for multioutput case
-
-# Returns
-- The R² score(s)
-"""
 function r2_score(y_true::AbstractArray, y_pred::AbstractArray; 
                   sample_weight=nothing, multioutput="uniform_average")
     if size(y_true) != size(y_pred)

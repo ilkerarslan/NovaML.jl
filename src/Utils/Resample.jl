@@ -1,29 +1,6 @@
 using Random
 using StatsBase
 
-export resample
-
-"""
-    resample(arrays...; replace=true, n_samples=nothing, random_state=nothing, stratify=nothing)
-
-Resample arrays or sparse matrices in a consistent way.
-
-Parameters:
-- `arrays`: Sequence of array-like structures with consistent first dimension.
-- `replace`: Bool, default=true. If true, implement resampling with replacement.
-- `n_samples`: Int or nothing, default=nothing. Number of samples to generate.
-- `random_state`: Int or nothing, default=nothing. Seed for random number generation.
-- `stratify`: Array-like or nothing, default=nothing. If not nothing, data is split in a stratified fashion.
-
-Returns:
-- Tuple of resampled arrays.
-
-Example:
-```julia
-X = [1.0 0.0; 2.0 1.0; 0.0 0.0]
-y = [0, 1, 2]
-X_resampled, y_resampled = resample(X, y, random_state=0)
-"""
 function resample(arrays...; replace=true, n_samples=nothing, random_state=nothing, stratify=nothing)
 if length(arrays) == 0
 throw(ArgumentError("At least one array must be provided"))

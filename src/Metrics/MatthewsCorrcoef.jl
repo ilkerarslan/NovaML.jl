@@ -1,19 +1,6 @@
 using LinearAlgebra
 using Statistics
 
-"""
-    matthews_corrcoef(y_true, y_pred; sample_weight=nothing)
-
-Compute the Matthews correlation coefficient (MCC).
-
-Parameters:
-- y_true: Ground truth (correct) target values.
-- y_pred: Estimated targets as returned by a classifier.
-- sample_weight: Sample weights.
-
-Returns:
-- mcc: The Matthews correlation coefficient (float between -1 and +1)
-"""
 function matthews_corrcoef(y_true, y_pred; sample_weight=nothing)
     if length(y_true) != length(y_pred)
         throw(ArgumentError("y_true and y_pred must have the same length"))
