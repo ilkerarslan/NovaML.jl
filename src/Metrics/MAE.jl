@@ -32,9 +32,4 @@ function mean_absolute_error(y_true::AbstractArray, y_pred::AbstractArray;
     end
 end
 
-"""
-    mae(y_true, y_pred; sample_weight=nothing, multioutput="uniform_average")
-
-Alias for `mean_absolute_error`.
-"""
 const mae = mean_absolute_error

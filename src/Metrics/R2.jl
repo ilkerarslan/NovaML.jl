@@ -38,23 +38,6 @@ function r2_score(y_true::AbstractArray, y_pred::AbstractArray;
     end
 end
 
-# ... [Previous r2_score function remains unchanged] ...
-
-"""
-    adj_r2_score(y_true, y_pred, n_features=nothing; sample_weight=nothing, multioutput="uniform_average")
-
-Compute the adjusted coefficient of determination (adjusted R²) between true values and predictions.
-
-# Arguments
-- `y_true`: Array of true values
-- `y_pred`: Array of predicted values
-- `n_features`: Number of features (predictors) in the model (can be passed as positional or keyword argument)
-- `sample_weight`: Optional array of sample weights
-- `multioutput`: String specifying averaging method for multioutput case
-
-# Returns
-- The adjusted R² score(s)
-"""
 function adj_r2_score(y_true::AbstractArray, y_pred::AbstractArray; n_features::Union{Int,Nothing}=nothing, 
                       sample_weight=nothing, multioutput="uniform_average", n_features_kw::Union{Int,Nothing}=nothing)
     if size(y_true) != size(y_pred)

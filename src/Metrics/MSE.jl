@@ -24,9 +24,4 @@ function mean_squared_error(y_true::AbstractArray, y_pred::AbstractArray;
     end
 end
 
-"""
-    mse(y_true, y_pred; sample_weight=nothing, multioutput="uniform_average")
-
-Alias for `mean_squared_error`.
-"""
 const mse = mean_squared_error
