@@ -5,8 +5,10 @@ makedocs(
     format = Documenter.HTML(),
     modules = [NovaML],
     pages = [
-        "Home" => "index.md"
-    ]
+        "Home" => "index.md",
+        "API Reference" => "api.md"
+    ],
+    strict = false 
 )
 
 deploydocs(
