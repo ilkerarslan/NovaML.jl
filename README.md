@@ -85,6 +85,7 @@ println("Test accuracy: $acc_tst")
 - `load_breast_cancer`: Loads the Wisconsin Breast Cancer dataset, a binary classification problem. It contains features computed from digitized images of breast mass, with the goal of predicting whether a tumor is malignant or benign.
 - `load_wine`: Offers the Wine recognition dataset, suitable for multi-class classification. It includes 13 features derived from chemical analysis of wines from three different cultivars in Italy.
 - `make_blobs`: Generates isotropic Gaussian blobs for clustering or classification tasks. This function allows you to create synthetic datasets with a specified number of samples, features, and centers, useful for testing and benchmarking algorithms.
+- `make_moons`: Generates a 2D binary classification dataset in the shape of two interleaving half moons. This synthetic dataset is ideal for visualizing and testing classification algorithms, especially those that can handle non-linear decision boundaries.
 
 ```julia
 using NovaML.Datasets
@@ -143,7 +144,6 @@ X, y = load_boston(return_X_y=true)
 
 - `LatentDirichletAllocation`: A generative statistical model that allows sets of observations to be explained by unobserved groups. It's commonly used for topic modeling in natural language processing.
 - `PCA`: Principal Component Analysis, a dimensionality reduction technique that identifies the axes of maximum variance in high-dimensional data and projects it onto a lower-dimensional subspace.
-
 
 ### Metrics
 
@@ -214,7 +214,7 @@ ŷ = rf(Xtst)
 
 ### Support Vector Machines (SVM)
 
-- ``SVC``: Support Vector Classifier. Binary classification which supports linear and RBF kernels. Doesn't support multiclass classification yet. 
+- `SVC`: Support Vector Classifier. Binary classification which supports linear and RBF kernels. Doesn't support multiclass classification yet. 
 
 ```julia
 using NovaML.SVM: SVC
@@ -228,6 +228,12 @@ svc(X_train, y_train)
 # Make predictions
 ypreds = svc(X_test)
 ```
+
+### Cluster
+
+- `AgglomerativeClustering`: A hierarchical clustering algorithm that builds nested clusters by merging or splitting them successively. This bottom-up approach is versatile and can create clusters of various shapes.
+- `DBSCAN`: Density-Based Spatial Clustering of Applications with Noise, a density-based clustering algorithm that groups together points that are closely packed together, marking points that lie alone in low-density regions as outliers.
+- `KMeans`: A popular and simple clustering algorithm that partitions n observations into k clusters, where each observation belongs to the cluster with the nearest mean (cluster centroid). It's efficient for large datasets but assumes spherical clusters of similar size.
 
 ### Dimensionality Reduction
 
