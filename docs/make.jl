@@ -15,7 +15,7 @@ makedocs(
         "Contributing" => "contributing.md"
     ]
 )
-
+println("Deploying documentation...")
 deploydocs(
     repo = "github.com/ilkerarslan/NovaML.jl.git",
 )
