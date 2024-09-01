@@ -3,7 +3,7 @@
 ## Agglomerative Clustering
 
 ```@docs
-AgglomerativeClustering
+NovaML.Cluster.AgglomerativeClustering
 ```
 
 ### Methods
