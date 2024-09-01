@@ -5,6 +5,54 @@ using Distributions
 import ...NovaML: AbstractModel, sigmoid, logit
 import ..Tree: DecisionTreeRegressor
 
+"""
+    GradientBoostingClassifier <: AbstractModel
+
+Gradient Boosting for classification.
+
+GB builds an additive model in a forward stage-wise fashion; it allows for the optimization of arbitrary differentiable loss functions. In each stage a regression tree is fit on the negative gradient of the given loss function.
+
+# Fields
+- `loss::String`: The loss function to be optimized.
+- `learning_rate::Float64`: Learning rate shrinks the contribution of each tree by `learning_rate`.
+- `n_estimators::Int`: The number of boosting stages to perform.
+- `subsample::Float64`: The fraction of samples to be used for fitting the individual base learners.
+- `criterion::String`: The function to measure the quality of a split.
+- `min_samples_split::Union{Int, Float64}`: The minimum number of samples required to split an internal node.
+- `min_samples_leaf::Union{Int, Float64}`: The minimum number of samples required to be at a leaf node.
+- `min_weight_fraction_leaf::Float64`: The minimum weighted fraction of the sum total of weights required to be at a leaf node.
+- `max_depth::Union{Int, Nothing}`: Maximum depth of the individual regression estimators.
+- `min_impurity_decrease::Float64`: A node will be split if this split induces a decrease of the impurity greater than or equal to this value.
+- `init::Union{AbstractModel, String, Nothing}`: An estimator object that is used to compute the initial predictions.
+- `random_state::Union{Int, Nothing}`: Controls the random seed given at each tree_estimator at each boosting iteration.
+- `max_features::Union{Int, Float64, String, Nothing}`: The number of features to consider when looking for the best split.
+- `verbose::Int`: Enable verbose output.
+- `max_leaf_nodes::Union{Int, Nothing}`: Grow trees with `max_leaf_nodes` in best-first fashion.
+- `warm_start::Bool`: When set to `true`, reuse the solution of the previous call to fit and add more estimators to the ensemble.
+- `validation_fraction::Float64`: The proportion of training data to set aside as validation set for early stopping.
+- `n_iter_no_change::Union{Int, Nothing}`: Used to decide if early stopping will be used to terminate training when validation score is not improving.
+- `tol::Float64`: Tolerance for the early stopping.
+- `ccp_alpha::Float64`: Complexity parameter used for Minimal Cost-Complexity Pruning.
+
+# Fitted Attributes
+- `estimators_::Vector{Vector{DecisionTreeRegressor}}`: The collection of fitted sub-estimators.
+- `classes_::Vector`: The classes labels.
+- `n_classes_::Int`: The number of classes.
+- `feature_importances_::Union{Vector{Float64}, Nothing}`: The feature importances.
+- `oob_improvement_::Union{Vector{Float64}, Nothing}`: The improvement in loss on the out-of-bag samples relative to the previous iteration.
+- `train_score_::Vector{Float64}`: The i-th score `train_score_[i]` is the loss of the model at iteration `i` on the in-bag sample.
+- `n_estimators_::Int`: The number of estimators as selected by early stopping.
+- `init_::Union{AbstractModel, Nothing}`: The estimator that provides the initial predictions.
+- `fitted::Bool`: Whether the model has been fitted.
+
+# Example
+```julia
+model = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1)
+model(X, y)  # Fit the model
+predictions = model(X_test)  # Make predictions
+probabilities = model(X_test, type=:probs)  # Get probability estimates
+```
+"""
 mutable struct GradientBoostingClassifier <: AbstractModel
     loss::String
     learning_rate::Float64
@@ -72,6 +120,17 @@ mutable struct GradientBoostingClassifier <: AbstractModel
     end
 end
 
+"""
+    (gbm::GradientBoostingClassifier)(X::AbstractMatrix, y::AbstractVector)
+Fit the gradient boosting model.
+
+# Arguments
+- `X::AbstractMatrix`: The input samples.
+- `y::AbstractVector`: The target values (class labels).
+
+# Returns
+- `GradientBoostingClassifier`: The fitted model.
+"""
 function (gbm::GradientBoostingClassifier)(X::AbstractMatrix, y::AbstractVector)
     n_samples, n_features = size(X)
     
@@ -151,6 +210,18 @@ function (gbm::GradientBoostingClassifier)(X::AbstractMatrix, y::AbstractVector)
     return gbm
 end
 
+"""
+    (gbm::GradientBoostingClassifier)(X::AbstractMatrix; type=nothing)
+Predict class for X.
+
+# Arguments
+- `X::AbstractMatrix`: The input samples.
+- `type`: If set to `:probs`, return probability estimates for each class.
+
+# Returns
+- If `type` is `:probs`, returns probabilities of each class.
+- Otherwise, returns predicted class labels.
+"""
 function (gbm::GradientBoostingClassifier)(X::AbstractMatrix; type=nothing)
     if !gbm.fitted
         throw(ErrorException("This GradientBoostingClassifier instance is not fitted yet. Call the model with training data before using it for predictions."))
@@ -169,6 +240,18 @@ function (gbm::GradientBoostingClassifier)(X::AbstractMatrix; type=nothing)
     end
 end
 
+"""
+    compute_negative_gradient(y::AbstractVector, y_pred::AbstractVector, loss::String)
+Compute negative gradient for the given loss function.
+
+# Arguments
+- `y::AbstractVector`: The true values.
+- `y_pred::AbstractVector`: The predicted values.
+- `loss::String`: The loss function name.
+
+# Returns
+- `AbstractVector`: The negative gradient.
+"""
 function compute_negative_gradient(y::AbstractVector, y_pred::AbstractVector, loss::String)
     if loss == "log_loss"
         return y .- sigmoid.(y_pred)
@@ -179,6 +262,18 @@ function compute_negative_gradient(y::AbstractVector, y_pred::AbstractVector, lo
     end
 end
 
+"""
+    compute_loss(y::AbstractVector, y_pred::AbstractVector, loss::String)
+Compute the loss for the given predictions.
+
+# Arguments
+- `y::AbstractVector`: The true values.
+- `y_pred`::AbstractVector: The predicted values.
+- `loss::String`: The loss function name.
+
+# Returns
+- `Float64`: The computed loss.
+"""
 function compute_loss(y::AbstractVector, y_pred::AbstractVector, loss::String)
     if loss == "log_loss"
         # Clip predictions to avoid log(0) or log(1)
@@ -191,6 +286,16 @@ function compute_loss(y::AbstractVector, y_pred::AbstractVector, loss::String)
     end
 end
 
+"""
+    compute_feature_importances(gbm::GradientBoostingClassifier)
+Compute feature importances for the gradient boosting model.
+
+# Arguments
+- `gbm::GradientBoostingClassifier`: The fitted gradient boosting model.
+
+# Returns
+- `Vector{Float64}`: The feature importances.
+"""
 function compute_feature_importances(gbm::GradientBoostingClassifier)
     n_features = size(gbm.estimators_[1][1].feature_importances_, 1)
     importances = zeros(n_features)
@@ -205,23 +310,72 @@ function compute_feature_importances(gbm::GradientBoostingClassifier)
     return importances
 end
 
+"""
+    InitialEstimator <: AbstractModel
+An initial estimator that always predicts a constant probability.
+
+# Fields
+- `prob::Float64`: The constant probability to predict.
+"""
 struct InitialEstimator <: AbstractModel
     prob::Float64
 end
 
+"""
+    (estimator::InitialEstimator)(X::AbstractMatrix)
+Predict using the initial estimator.
+
+# Arguments
+- `X::AbstractMatrix`: The input samples.
+
+# Returns
+- `Vector{Float64}`: The predictions.
+"""
 function (estimator::InitialEstimator)(X::AbstractMatrix)
     return fill(estimator.prob, size(X, 1))
 end
 
+"""
+    fit_initial_estimator(y::AbstractVector)
+Fit an initial estimator based on the mean of y.
+
+# Arguments
+- `y::AbstractVector`: The target values.
+
+# Returns
+- `InitialEstimator`: The fitted initial estimator.
+"""
 function fit_initial_estimator(y::AbstractVector)
     prob = mean(y .== 1)
     return InitialEstimator(prob)
 end
 
-# Helper struct for zero initialization
+"""
+    ZeroEstimator <: AbstractModel
+An estimator that always predicts zero.
+"""
 struct ZeroEstimator <: AbstractModel end
+
+"""
+    (::ZeroEstimator)(X::AbstractMatrix)
+Predict using the zero estimator.
+
+# Arguments
+- `X::AbstractMatrix`: The input samples.
+
+# Returns
+- `Vector{Float64}`: Zero predictions.
+"""
 (::ZeroEstimator)(X::AbstractMatrix) = zeros(size(X, 1))
 
+"""
+    Base.show(io::IO, gbm::GradientBoostingClassifier)
+Custom show method for GradientBoostingClassifier.
+
+# Arguments
+- `io::IO`: The I/O stream.
+- `gbm::GradientBoostingClassifier`: The gradient boosting model to display.
+"""
 function Base.show(io::IO, gbm::GradientBoostingClassifier)
     println(io, "GradientBoostingClassifier(")
     println(io, "  loss=$(gbm.loss),")

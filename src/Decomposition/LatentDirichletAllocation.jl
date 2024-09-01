@@ -4,6 +4,54 @@ using SparseArrays
 using SpecialFunctions: digamma
 using Distributions: Gamma
 
+"""
+    LatentDirichletAllocation
+
+Latent Dirichlet Allocation (LDA) with online variational Bayes algorithm.
+
+LDA is a generative probabilistic model for collections of discrete dataset such as text corpora.
+It is also a topic model that is used for discovering abstract topics from a collection of documents.
+
+# Fields
+- `n_components::Int`: Number of topics.
+- `doc_topic_prior::Union{Float64, Nothing}`: Prior of document topic distribution.
+- `topic_word_prior::Union{Float64, Nothing}`: Prior of topic word distribution.
+- `learning_method::Symbol`: Method used to update the model: :batch for batch learning, :online for online learning.
+- `learning_decay::Float64`: It is a parameter that control the rate at which the learning rate decreases.
+- `learning_offset::Float64`: A (positive) parameter that downweights early iterations in online learning.
+- `max_iter::Int`: The maximum number of iterations.
+- `batch_size::Int`: Number of documents to use in each EM iteration in online learning method.
+- `evaluate_every::Int`: How often to evaluate perplexity.
+- `total_samples::Float64`: Total number of documents.
+- `perp_tol::Float64`: Perplexity tolerance in batch learning.
+- `mean_change_tol::Float64`: Stopping tolerance for updating document topic distribution in E-step.
+- `max_doc_update_iter::Int`: Max number of iterations for updating document topic distribution in E-step.
+- `n_jobs::Union{Int, Nothing}`: The number of jobs to use in the E-step.
+- `verbose::Int`: Verbosity level.
+- `random_state::Union{Int, Nothing}`: Seed for random number generation.
+
+# Learned attributes
+- `components_::Union{Matrix{Float64}, Nothing}`: Topic word distribution. shape = (n_components, n_features)
+- `exp_dirichlet_component_::Union{Matrix{Float64}, Nothing}`: Exponential value of expectation of log topic word distribution. shape = (n_components, n_features)
+- `n_batch_iter_::Int`: Number of iterations of the EM step.
+- `n_iter_::Int`: Number of passes over the dataset.
+- `bound_::Float64`: Final perplexity score on training set.
+- `n_features_in_::Int`: Number of features seen during fit.
+- `feature_names_in_::Union{Vector{String}, Nothing}`: Names of features seen during fit.
+
+# Example
+```julia
+using NovaML
+
+# Create an LDA model
+lda = LatentDirichletAllocation(n_components=10, random_state=42)
+
+# Fit the model to data
+doc_topic_distr = lda(X)
+
+# Transform new data
+new_doc_topic_distr = lda(new_X)
+"""
 mutable struct LatentDirichletAllocation
     n_components::Int
     doc_topic_prior::Union{Float64, Nothing}
@@ -73,6 +121,20 @@ mutable struct LatentDirichletAllocation
     end
 end
 
+"""
+    (lda::LatentDirichletAllocation)(X::AbstractMatrix{T}; type=nothing) where T <: Real
+Fit the model to X, or transform X if the model is already fitted.
+
+# Arguments
+
+- `X::AbstractMatrix{T}`: Document-term matrix.
+- `type`: Ignored. Present for API consistency.
+
+# Returns
+
+- If the model is not fitted, returns the document-topic distribution after fitting.
+- If the model is already fitted, returns the document-topic distribution for X.
+"""
 function (lda::LatentDirichletAllocation)(X::AbstractMatrix{T}; type=nothing) where T <: Real
     if !lda.fitted
         # Fit and transform
@@ -83,6 +145,17 @@ function (lda::LatentDirichletAllocation)(X::AbstractMatrix{T}; type=nothing) wh
     end
 end
 
+"""
+    _fit_transform(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where T <: Real
+Fit the model to X and return the document-topic distribution.
+
+# Arguments
+- `lda::LatentDirichletAllocation`: The LDA model.
+- `X::AbstractMatrix{T}`: Document-term matrix.
+
+# Returns
+- `Matrix{Float64}`: Document-topic distribution.
+"""
 function _fit_transform(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where T <: Real
     n_samples, n_features = size(X)
     
@@ -108,6 +181,17 @@ function _fit_transform(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) wh
     return doc_topic_distr
 end
 
+"""
+    _fit_batch(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where T <: Real
+Fit the model to X using batch variational Bayes method.
+
+# Arguments
+- `lda::LatentDirichletAllocation`: The LDA model.
+- `X::AbstractMatrix{T}`: Document-term matrix.
+
+# Returns
+- `Matrix{Float64}`: Document-topic distribution.
+"""
 function _fit_batch(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where T <: Real
     n_samples, n_features = size(X)
     doc_topic_distr = nothing
@@ -134,6 +218,17 @@ function _fit_batch(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where 
     return doc_topic_distr
 end
 
+"""
+    _fit_online(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where T <: Real
+Fit the model to X using online variational Bayes method.
+
+# Arguments
+- `lda::LatentDirichletAllocation`: The LDA model.
+- `X::AbstractMatrix{T}`: Document-term matrix.
+
+# Returns
+- `Matrix{Float64}`: Document-topic distribution.
+"""
 function _fit_online(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where T <: Real
     n_samples, n_features = size(X)
     
@@ -166,6 +261,17 @@ function _fit_online(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where
     return _e_step(lda, X)
 end
 
+"""
+    _e_step(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where T <: Real
+E-step in EM update.
+
+# Arguments
+- `lda::LatentDirichletAllocation`: The LDA model.
+- `X::AbstractMatrix{T}`: Document-term matrix.
+
+# Returns
+- `Matrix{Float64}`: Document-topic distribution.
+"""
 function _e_step(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where T <: Real
     n_samples, n_features = size(X)
     doc_topic_distr = ones(n_samples, lda.n_components) / lda.n_components
@@ -202,6 +308,16 @@ function _e_step(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where T <
     return doc_topic_distr
 end
 
+"""
+    _m_step(lda::LatentDirichletAllocation, X::AbstractMatrix{T}, doc_topic_distr::Matrix{Float64}, scale::Float64=1.0) where T <: Real
+M-step in EM update.
+
+# Arguments
+- `lda::LatentDirichletAllocation`: The LDA model.
+- `X::AbstractMatrix{T}`: Document-term matrix.
+- `doc_topic_distr::Matrix{Float64}`: Document-topic distribution.
+- `scale`::Float64: Scaling factor for online update.
+"""
 function _m_step(lda::LatentDirichletAllocation, X::AbstractMatrix{T}, doc_topic_distr::Matrix{Float64}, scale::Float64=1.0) where T <: Real
     n_samples, n_features = size(X)
     
@@ -218,10 +334,33 @@ function _m_step(lda::LatentDirichletAllocation, X::AbstractMatrix{T}, doc_topic
     lda.exp_dirichlet_component_ ./= sum(lda.exp_dirichlet_component_, dims=2)
 end
 
+"""
+    _transform(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where T <: Real
+Transform X to document-topic distribution.
+
+# Arguments
+- `lda::LatentDirichletAllocation`: The LDA model.
+- `X::AbstractMatrix{T}`: Document-term matrix.
+
+# Returns
+- `Matrix{Float64}`: Document-topic distribution.
+"""
 function _transform(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where T <: Real
     return _e_step(lda, X)
 end
 
+"""
+    _perplexity(lda::LatentDirichletAllocation, X::AbstractMatrix{T}, doc_topic_distr::Matrix{Float64}) where T <: Real
+Calculate approximate perplexity for data X.
+
+# Arguments
+- `lda::LatentDirichletAllocation`: The LDA model.
+- `X::AbstractMatrix{T}`: Document-term matrix.
+- `doc_topic_distr::Matrix{Float64}`: Document-topic distribution.
+
+# Returns
+- `Float64`: The calculated bound.
+"""
 function _perplexity(lda::LatentDirichletAllocation, X::AbstractMatrix{T}, doc_topic_distr::Matrix{Float64}) where T <: Real
     n_samples, n_features = size(X)
     bound = 0.0
@@ -260,6 +399,14 @@ function _perplexity(lda::LatentDirichletAllocation, X::AbstractMatrix{T}, doc_t
     return bound
 end
 
+"""
+    Base.show(io::IO, lda::LatentDirichletAllocation)
+Custom show method for LatentDirichletAllocation.
+
+# Arguments
+- `io::IO`: The I/O stream
+- `lda::LatentDirichletAllocation`: The LDA model to display
+"""
 function Base.show(io::IO, lda::LatentDirichletAllocation)
     print(io, "LatentDirichletAllocation(n_components=$(lda.n_components), ")
     print(io, "learning_method=$(lda.learning_method), ")

@@ -4,8 +4,36 @@ using Statistics: mean
 import ...NovaML: AbstractModel
 import ..Tree: DecisionTreeClassifier
 
-export RandomForestClassifier
+"""
+    RandomForestClassifier <: AbstractModel
 
+A random forest classifier.
+
+Random forests are an ensemble learning method for classification that operate by constructing
+a multitude of decision trees at training time and outputting the class that is the mode of
+the classes of the individual trees.
+
+# Fields
+- `n_estimators::Int`: The number of trees in the forest.
+- `max_depth::Union{Int, Nothing}`: The maximum depth of the tree.
+- `min_samples_split::Int`: The minimum number of samples required to split an internal node.
+- `min_samples_leaf::Int`: The minimum number of samples required to be at a leaf node.
+- `max_features::Union{Int, Float64, String, Nothing}`: The number of features to consider when looking for the best split.
+- `bootstrap::Bool`: Whether bootstrap samples are used when building trees.
+- `random_state::Union{Int, Nothing}`: Controls both the randomness of the bootstrapping of the samples used when building trees and the sampling of the features to consider when looking for the best split at each node.
+- `trees::Vector{DecisionTreeClassifier}`: The collection of fitted sub-estimators.
+- `n_classes::Int`: The number of classes.
+- `classes::Vector`: The class labels.
+- `fitted::Bool`: Whether the model has been fitted.
+- `feature_importances_::Union{Vector{Float64}, Nothing}`: The feature importances.
+- `n_features::Int`: The number of features when fitting the model.
+
+# Example
+```julia
+rf = RandomForestClassifier(n_estimators=100, max_depth=10)
+rf(X, y)  # Fit the model
+predictions = rf(X_test)  # Make predictions
+"""
 mutable struct RandomForestClassifier <: AbstractModel
     n_estimators::Int
     max_depth::Union{Int, Nothing}
@@ -48,6 +76,17 @@ mutable struct RandomForestClassifier <: AbstractModel
     end
 end
 
+"""
+    (forest::RandomForestClassifier)(X::AbstractMatrix, y::AbstractVector)
+Fit the random forest classifier.
+
+# Arguments
+- `X::AbstractMatrix`: The input samples.
+- `y::AbstractVector`: The target values (class labels).
+
+# Returns
+- `RandomForestClassifier`: The fitted model.
+"""
 function (forest::RandomForestClassifier)(X::AbstractMatrix, y::AbstractVector)
     n_samples, n_features = size(X)
     forest.n_features = n_features
@@ -93,6 +132,16 @@ function (forest::RandomForestClassifier)(X::AbstractMatrix, y::AbstractVector)
     return forest
 end
 
+"""
+    (forest::RandomForestClassifier)(X::AbstractMatrix)
+Predict class for X.
+
+# Arguments
+- `X::AbstractMatrix`: The input samples.
+
+# Returns
+- `Vector`: The predicted class labels.
+"""
 function (forest::RandomForestClassifier)(X::AbstractMatrix)
     if !forest.fitted
         throw(ErrorException("This RandomForestClassifier instance is not fitted yet. Call the model with training data before using it for predictions."))
@@ -109,6 +158,17 @@ function (forest::RandomForestClassifier)(X::AbstractMatrix)
     return [forest.classes[argmax(count(==(c), row) for c in forest.classes)] for row in eachrow(predictions)]
 end
 
+"""
+    get_max_features(forest::RandomForestClassifier, n_features::Int)
+Get the number of features to consider when looking for the best split.
+
+# Arguments
+- `forest::RandomForestClassifier`: The random forest classifier.
+- `n_features::Int`: The total number of features.
+
+Returns
+- `Int`: The number of features to consider.
+"""
 function get_max_features(forest::RandomForestClassifier, n_features::Int)
     if forest.max_features === nothing
         return n_features
@@ -125,6 +185,18 @@ function get_max_features(forest::RandomForestClassifier, n_features::Int)
     end
 end
 
+"""
+    bootstrap_sample(forest::RandomForestClassifier, X::AbstractMatrix, y::AbstractVector)
+Create a bootstrap sample of the dataset.
+
+# Arguments
+- `forest::RandomForestClassifier`: The random forest classifier.
+- `X::AbstractMatrix`: The input samples.
+- `y::AbstractVector`: The target values.
+
+# Returns
+- `Tuple{AbstractMatrix, AbstractVector}`: The bootstrapped samples and targets.
+"""
 function bootstrap_sample(forest::RandomForestClassifier, X::AbstractMatrix, y::AbstractVector)
     n_samples = size(X, 1)
     if forest.bootstrap
@@ -135,6 +207,18 @@ function bootstrap_sample(forest::RandomForestClassifier, X::AbstractMatrix, y::
     end
 end
 
+"""
+    calculate_tree_feature_importance(tree::DecisionTreeClassifier, feature_indices::Vector{Int}, n_features::Int)
+Calculate the feature importance for a single decision tree.
+
+# Arguments
+- `tree::DecisionTreeClassifier`: The decision tree.
+- `feature_indices::Vector{Int}`: The indices of the features used in this tree.
+- `n_features::Int`: The total number of features.
+
+# Returns
+- `Vector{Float64}`: The feature importances.
+"""
 function calculate_tree_feature_importance(tree::DecisionTreeClassifier, feature_indices::Vector{Int}, n_features::Int)
     importances = zeros(n_features)
     
@@ -154,6 +238,15 @@ function calculate_tree_feature_importance(tree::DecisionTreeClassifier, feature
     return importances
 end
 
+"""
+    Base.show(io::IO, forest::RandomForestClassifier)
+
+Custom show method for RandomForestClassifier.
+
+# Arguments
+- `io::IO`: The I/O stream.
+- `forest::RandomForestClassifier`: The random forest classifier to display.
+"""
 function Base.show(io::IO, forest::RandomForestClassifier)
     println(io, "RandomForestClassifier(")
     println(io, "  n_estimators=$(forest.n_estimators),")

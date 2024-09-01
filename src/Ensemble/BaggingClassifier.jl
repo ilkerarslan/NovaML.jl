@@ -2,6 +2,42 @@ using Random
 using Statistics
 import ...NovaML: AbstractModel
 
+"""
+    BaggingClassifier <: AbstractModel
+
+A Bagging classifier.
+
+A Bagging classifier is an ensemble meta-estimator that fits base classifiers each on random subsets of the original dataset and then aggregate their individual predictions (either by voting or by averaging) to form a final prediction. Such a meta-estimator can typically be used as a way to reduce the variance of a black-box estimator (e.g., a decision tree), by introducing randomization into its construction procedure and then making an ensemble out of it.
+
+# Fields
+- `base_estimator::AbstractModel`: The base estimator to fit on random subsets of the dataset.
+- `n_estimators::Int`: The number of base estimators in the ensemble.
+- `max_samples::Union{Int, Float64}`: The number of samples to draw from X to train each base estimator.
+- `max_features::Union{Int, Float64}`: The number of features to draw from X to train each base estimator.
+- `bootstrap::Bool`: Whether samples are drawn with replacement.
+- `bootstrap_features::Bool`: Whether features are drawn with replacement.
+- `oob_score::Bool`: Whether to use out-of-bag samples to estimate the generalization error.
+- `warm_start::Bool`: When set to True, reuse the solution of the previous call to fit and add more estimators to the ensemble, otherwise, just fit a whole new ensemble.
+- `random_state::Union{Int, Nothing}`: Controls the random resampling of the original dataset.
+- `verbose::Int`: Controls the verbosity when fitting and predicting.
+
+# Fitted Attributes
+- `estimators_::Vector{AbstractModel}`: The collection of fitted base estimators.
+- `estimators_features_::Vector{Vector{Int}}`: The subset of drawn features for each base estimator.
+- `classes_::Vector`: The classes labels.
+- `n_classes_::Int`: The number of classes.
+- `oob_score_::Union{Float64, Nothing}`: Score of the training dataset obtained using an out-of-bag estimate.
+- `oob_decision_function_::Union{Matrix{Float64}, Nothing}`: Decision function computed with out-of-bag estimate on the training set.
+- `fitted::Bool`: Whether the model has been fitted.
+
+# Example
+```julia
+model = BaggingClassifier(base_estimator=DecisionTreeClassifier(), n_estimators=10)
+model(X, y)  # Fit the model
+predictions = model(X_test)  # Make predictions
+probabilities = model(X_test, type=:probs)  # Get probability estimates
+```
+"""
 mutable struct BaggingClassifier <: AbstractModel
     base_estimator::AbstractModel
     n_estimators::Int
@@ -44,6 +80,17 @@ mutable struct BaggingClassifier <: AbstractModel
     end
 end
 
+"""
+    (bc::BaggingClassifier)(X::AbstractMatrix, y::AbstractVector)
+Fit the Bagging classifier.
+
+# Arguments
+- `X::AbstractMatrix`: The input samples.
+- `y::AbstractVector`: The target values (class labels).
+
+# Returns
+- `BaggingClassifier`: The fitted model.
+"""
 function (bc::BaggingClassifier)(X::AbstractMatrix, y::AbstractVector)
     n_samples, n_features = size(X)
     bc.classes_ = sort(unique(y))
@@ -98,6 +145,18 @@ function (bc::BaggingClassifier)(X::AbstractMatrix, y::AbstractVector)
     return bc
 end
 
+"""
+    (bc::BaggingClassifier)(X::AbstractMatrix; type=nothing)
+Predict class for X.
+
+# Arguments
+- `X::AbstractMatrix`: The input samples.
+- `type`: If set to :probs, return probability estimates for each class.
+
+# Returns
+- If type is :probs, returns probabilities of each class.
+- Otherwise, returns predicted class labels.
+"""
 function (bc::BaggingClassifier)(X::AbstractMatrix; type=nothing)
     if !bc.fitted
         throw(ErrorException("This BaggingClassifier instance is not fitted yet. Call the model with training data before using it for predictions."))
@@ -121,6 +180,15 @@ function (bc::BaggingClassifier)(X::AbstractMatrix; type=nothing)
     end
 end
 
+"""
+    _compute_oob_score(bc::BaggingClassifier, X::AbstractMatrix, y::AbstractVector)
+Compute out-of-bag score for the Bagging classifier.
+
+# Arguments
+- `bc::BaggingClassifier`: The Bagging classifier.
+- `X::AbstractMatrix`: The input samples.
+- `y::AbstractVector`: The target values.
+"""
 function _compute_oob_score(bc::BaggingClassifier, X::AbstractMatrix, y::AbstractVector)
     n_samples = size(X, 1)
     n_classes = length(bc.classes_)
@@ -149,6 +217,17 @@ function _compute_oob_score(bc::BaggingClassifier, X::AbstractMatrix, y::Abstrac
     bc.oob_decision_function_ = oob_decision_function
 end
 
+"""
+    _generate_indices(bc::BaggingClassifier, n_samples::Int)
+Generate sample indices for individual base estimators.
+
+# Arguments
+- `bc::BaggingClassifier`: The Bagging classifier.
+- `n_samples`::Int: The number of samples in the dataset.
+
+# Returns
+- `Vector{Int}`: The generated sample indices.
+"""
 function _generate_indices(bc::BaggingClassifier, n_samples::Int)
     if bc.max_samples isa Int
         n_samples = min(bc.max_samples, n_samples)
@@ -163,6 +242,14 @@ function _generate_indices(bc::BaggingClassifier, n_samples::Int)
     end
 end
 
+"""
+    Base.show(io::IO, bc::BaggingClassifier)
+Custom show method for BaggingClassifier.
+
+# Arguments
+- `io::IO`: The I/O stream.
+- `bc::BaggingClassifier`: The Bagging classifier to display.
+"""
 function Base.show(io::IO, bc::BaggingClassifier)
     print(io, "BaggingClassifier(base_estimator=$(bc.base_estimator), ",
               "n_estimators=$(bc.n_estimators), ",

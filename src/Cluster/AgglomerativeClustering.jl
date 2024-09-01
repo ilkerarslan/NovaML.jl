@@ -1,3 +1,48 @@
+"""
+    AgglomerativeClustering
+
+A struct representing Agglomerative Clustering, a hierarchical clustering algorithm.
+
+# Fields
+- `n_clusters::Union{Int, Nothing}`: The number of clusters to find. If `nothing`, it must be used with `distance_threshold`.
+- `metric::Union{String, Function}`: The metric to use for distance computation. Can be "euclidean", "manhattan", or a custom function.
+- `memory::Union{String, Nothing}`: Used to cache the distance matrix between iterations.
+- `connectivity::Union{AbstractMatrix, Function, Nothing}`: Connectivity matrix or callable to be used.
+- `compute_full_tree::Union{Bool, String}`: Whether to compute the full tree or stop early.
+- `linkage::String`: The linkage criterion to use. Can be "ward", "complete", "average", or "single".
+- `distance_threshold::Union{Float64, Nothing}`: The threshold to stop clustering.
+- `compute_distances::Bool`: Whether to compute distances.
+
+# Fitted Attributes
+- `labels_::Vector{Int}`: Cluster labels for each point.
+- `n_leaves_::Int`: Number of leaves in the hierarchical tree.
+- `n_connected_components_::Int`: Number of connected components in the graph.
+- `children_::Matrix{Int}`: The children of each non-leaf node.
+- `distances_::Vector{Float64}`: Distances between nodes in the tree.
+
+# Constructor
+    AgglomerativeClustering(;
+        n_clusters::Union{Int, Nothing}=2,
+        metric::Union{String, Function}="euclidean",
+        memory::Union{String, Nothing}=nothing,
+        connectivity::Union{AbstractMatrix, Function, Nothing}=nothing,
+        compute_full_tree::Union{Bool, String}="auto",
+        linkage::String="ward",
+        distance_threshold::Union{Float64, Nothing}=nothing,
+        compute_distances::Bool=false
+    )
+
+Constructs an AgglomerativeClustering object with the specified parameters.
+
+# Examples
+```julia
+# Create an AgglomerativeClustering object with 3 clusters
+clustering = AgglomerativeClustering(n_clusters=3)
+
+# Create an AgglomerativeClustering object with a distance threshold
+clustering = AgglomerativeClustering(distance_threshold=1.5, linkage="single")
+```
+"""
 mutable struct AgglomerativeClustering
     n_clusters::Union{Int, Nothing}
     metric::Union{String, Function}
@@ -39,6 +84,26 @@ mutable struct AgglomerativeClustering
     end
 end
 
+"""
+    (clustering::AgglomerativeClustering)(X::AbstractMatrix; y=nothing)
+Perform agglomerative clustering on the input data.
+
+# Arguments
+
+X::AbstractMatrix: The input data matrix where each row is a sample and each column is a feature.
+y=nothing: Ignored. Present for API consistency.
+
+# Returns
+
+clustering::AgglomerativeClustering: The fitted clustering object.
+
+#Examples
+```julia
+X = rand(100, 5)  # 100 samples, 5 features
+clustering = AgglomerativeClustering(n_clusters=3)
+fitted_clustering = clustering(X)
+```
+"""
 function (clustering::AgglomerativeClustering)(X::AbstractMatrix; y=nothing)
     n_samples, n_features = size(X)
     
@@ -106,6 +171,25 @@ function (clustering::AgglomerativeClustering)(X::AbstractMatrix; y=nothing)
     return clustering
 end
 
+"""
+    compute_distances(X::AbstractMatrix, metric::Union{String, Function})
+Compute the distance matrix for the input data using the specified metric.
+
+# Arguments
+
+X::AbstractMatrix: The input data matrix.
+metric::Union{String, Function}: The distance metric to use. Can be "euclidean", "manhattan", or a custom function.
+
+# Returns
+
+distances::Matrix: The computed distance matrix.
+
+# Examples
+```julia
+X = rand(10, 3)
+distances = compute_distances(X, "euclidean")
+```
+"""
 function compute_distances(X::AbstractMatrix, metric::Union{String, Function})
     n_samples = size(X, 1)
     distances = zeros(n_samples, n_samples)
@@ -130,6 +214,26 @@ function compute_distances(X::AbstractMatrix, metric::Union{String, Function})
     return distances
 end
 
+"""
+(clustering::AgglomerativeClustering)(X::AbstractMatrix, type::Symbol)
+Fit the clustering model and return the cluster labels.
+
+# Arguments
+
+X::AbstractMatrix: The input data matrix.
+type::Symbol: Must be :fit_predict to fit the model and return labels.
+
+# Returns
+
+labels::Vector{Int}: The cluster labels for each input sample.
+
+# Examples
+```julia
+X = rand(100, 5)
+clustering = AgglomerativeClustering(n_clusters=3)
+labels = clustering(X, :fit_predict)
+```
+"""
 function (clustering::AgglomerativeClustering)(X::AbstractMatrix, type::Symbol)
     if type == :fit_predict
         clustering(X)

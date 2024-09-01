@@ -30,7 +30,6 @@ function (p::pipe)(X, y=nothing; kwargs...)
     return data
 end
 
-# Helper method to get the last step (usually the model)
 function Base.last(p::pipe)
     return p.steps[end]
 end

@@ -4,6 +4,39 @@ using Distributions
 import ...NovaML: AbstractModel
 import ...Tree: DecisionTreeClassifier
 
+"""
+    AdaBoostClassifier <: AbstractModel
+
+An AdaBoost classifier.
+
+An AdaBoost classifier is a meta-estimator that begins by fitting a classifier on the original dataset
+and then fits additional copies of the classifier on the same dataset but where the weights of
+incorrectly classified instances are adjusted such that subsequent classifiers focus more on difficult cases.
+
+# Fields
+- `base_estimator::Any`: The base estimator from which the boosted ensemble is built.
+- `n_estimators::Int`: The maximum number of estimators at which boosting is terminated.
+- `learning_rate::Float64`: Weight applied to each classifier at each boosting iteration.
+- `algorithm::Symbol`: The SAMME algorithm to use when fitting the model.
+- `random_state::Union{Int, Nothing}`: Controls the random seed given at each `base_estimator` at each boosting iteration.
+
+# Fitted Attributes
+- `estimators_::Vector{Any}`: The collection of fitted sub-estimators.
+- `estimator_weights_::Vector{Float64}`: Weights for each estimator in the boosted ensemble.
+- `estimator_errors_::Vector{Float64}`: Classification error for each estimator in the boosted ensemble.
+- `classes_::Vector{Any}`: The classes labels.
+- `n_classes_::Int`: The number of classes.
+- `feature_importances_::Union{Vector{Float64}, Nothing}`: The feature importances if supported by the `base_estimator`.
+- `fitted::Bool`: Whether the model has been fitted.
+
+# Example
+```julia
+model = AdaBoostClassifier(n_estimators=100, learning_rate=1.0)
+model(X, y)  # Fit the model
+predictions = model(X_test)  # Make predictions
+probabilities = model(X_test, type=:probs)  # Get probability estimates
+```
+"""
 mutable struct AdaBoostClassifier <: AbstractModel
     base_estimator::Any
     n_estimators::Int
@@ -42,6 +75,17 @@ mutable struct AdaBoostClassifier <: AbstractModel
     end
 end
 
+"""
+(model::AdaBoostClassifier)(X::AbstractMatrix, y::AbstractVector)
+Fit the AdaBoost model.
+
+# Arguments
+- `X::AbstractMatrix`: The input samples.
+- `y::AbstractVector`: The target values (class labels).
+
+# Returns
+- `AdaBoostClassifier`: The fitted model.
+"""
 function (model::AdaBoostClassifier)(X::AbstractMatrix, y::AbstractVector)
     if model.random_state !== nothing
         Random.seed!(model.random_state)
@@ -113,6 +157,18 @@ function (model::AdaBoostClassifier)(X::AbstractMatrix, y::AbstractVector)
     return model
 end
 
+"""
+    (model::AdaBoostClassifier)(X::AbstractMatrix; type=nothing)
+Predict using the AdaBoost model.
+
+# Arguments
+- `X::AbstractMatrix`: The input samples.
+- `type`: If set to :probs, return probability estimates for each class.
+
+# Returns
+- If type is :probs, returns probabilities of each class.
+- Otherwise, returns predicted class labels.
+"""
 function (model::AdaBoostClassifier)(X::AbstractMatrix; type=nothing)
     if !model.fitted
         throw(ErrorException("This AdaBoostClassifier instance is not fitted yet. Call the model with training data before using it for predictions."))
@@ -146,6 +202,16 @@ function (model::AdaBoostClassifier)(X::AbstractMatrix; type=nothing)
     end
 end
 
+"""
+    _compute_feature_importances(model::AdaBoostClassifier)
+Compute feature importances for the AdaBoost model.
+
+# Arguments
+- `model::AdaBoostClassifier`: The fitted AdaBoost model.
+
+# Returns
+- `Union{Vector{Float64}, Nothing}`: The feature importances if available, otherwise nothing.
+"""
 function _compute_feature_importances(model::AdaBoostClassifier)
     if isempty(model.estimators_)
         return nothing
@@ -170,6 +236,14 @@ function _compute_feature_importances(model::AdaBoostClassifier)
     return feature_importances ./ total_weight
 end
 
+"""
+    Base.show(io::IO, model::AdaBoostClassifier)
+Custom show method for AdaBoostClassifier.
+
+# Arguments
+- `io::IO`: The I/O stream.
+- `model`::AdaBoostClassifier: The AdaBoost model to display.
+"""
 function Base.show(io::IO, model::AdaBoostClassifier)
     println(io, "AdaBoostClassifier(")
     println(io, "  base_estimator=$(model.base_estimator),")
@@ -181,8 +255,17 @@ function Base.show(io::IO, model::AdaBoostClassifier)
     print(io, ")")
 end
 
-# Additional methods for compatibility and convenience
+"""
+    get_params(model::AdaBoostClassifier; deep=true)
+Get parameters for this estimator.
 
+# Arguments
+- `model::AdaBoostClassifier`: The AdaBoost model.
+- `deep::Bool`: If true, will return the parameters for this estimator and contained subobjects that are estimators.
+
+# Returns
+- `Dict`: Parameter names mapped to their values.
+"""
 function get_params(model::AdaBoostClassifier; deep=true)
     params = Dict(
         :base_estimator => model.base_estimator,
@@ -200,6 +283,17 @@ function get_params(model::AdaBoostClassifier; deep=true)
     return params
 end
 
+"""
+    set_params!(model::AdaBoostClassifier; kwargs...)
+Set the parameters of this estimator.
+
+# Arguments
+- `model::AdaBoostClassifier`: The AdaBoost model.
+- `kwargs...`: Estimator parameters.
+
+# Returns
+- `AdaBoostClassifier`: The estimator instance.
+"""
 function set_params!(model::AdaBoostClassifier; kwargs...)
     for (key, value) in kwargs
         if key in [:base_estimator, :n_estimators, :learning_rate, :algorithm, :random_state]
@@ -218,6 +312,17 @@ function set_params!(model::AdaBoostClassifier; kwargs...)
     return model
 end
 
+"""
+    decision_function(model::AdaBoostClassifier, X::AbstractMatrix)
+Compute the decision function of X.
+
+# Arguments
+- `model::AdaBoostClassifier`: The fitted AdaBoost model.
+- `X::AbstractMatrix`: The input samples.
+
+# Returns
+- `Matrix{Float64}`: The decision function of the input samples.
+"""
 function decision_function(model::AdaBoostClassifier, X::AbstractMatrix)
     if !model.fitted
         throw(ErrorException("This AdaBoostClassifier instance is not fitted yet."))
@@ -243,6 +348,17 @@ function decision_function(model::AdaBoostClassifier, X::AbstractMatrix)
     return scores
 end
 
+"""
+    staged_predict(model::AdaBoostClassifier, X::AbstractMatrix)
+Return a generator of predictions for each boosting iteration.
+
+# Arguments
+- `model::AdaBoostClassifier`: The fitted AdaBoost model.
+- `X::AbstractMatrix`: The input samples.
+
+# Returns
+- `Channel`: A generator of predictions at each stage.
+"""
 function staged_predict(model::AdaBoostClassifier, X::AbstractMatrix)
     if !model.fitted
         throw(ErrorException("This AdaBoostClassifier instance is not fitted yet."))
@@ -269,6 +385,17 @@ function staged_predict(model::AdaBoostClassifier, X::AbstractMatrix)
     end
 end
 
+"""
+    staged_predict_proba(model::AdaBoostClassifier, X::AbstractMatrix)
+Return a generator of predicted probabilities for each boosting iteration.
+
+# Arguments
+- `model::AdaBoostClassifier`: The fitted AdaBoost model.
+- `X::AbstractMatrix`: The input samples.
+
+# Returns
+- `Channel`: A generator of predicted probabilities at each stage.
+"""
 function staged_predict_proba(model::AdaBoostClassifier, X::AbstractMatrix)
     if !model.fitted
         throw(ErrorException("This AdaBoostClassifier instance is not fitted yet."))

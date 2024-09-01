@@ -5,8 +5,41 @@ using DataStructures: DefaultDict
 import ...NovaML: AbstractModel
 import ..Tree: DecisionTreeRegressor
 
-export RandomForestRegressor
+"""
+    RandomForestRegressor <: AbstractModel
 
+A random forest regressor.
+
+Random forests are an ensemble learning method for regression that operate by constructing
+a multitude of decision trees at training time and outputting the mean prediction of the
+individual trees.
+
+# Fields
+- `n_estimators::Int`: The number of trees in the forest.
+- `criterion::String`: The function to measure the quality of a split.
+- `max_depth::Union{Int, Nothing}`: The maximum depth of the tree.
+- `min_samples_split::Int`: The minimum number of samples required to split an internal node.
+- `min_samples_leaf::Int`: The minimum number of samples required to be at a leaf node.
+- `min_weight_fraction_leaf::Float64`: The minimum weighted fraction of the sum total of weights required to be at a leaf node.
+- `max_features::Union{Int, Float64, String, Nothing}`: The number of features to consider when looking for the best split.
+- `max_leaf_nodes::Union{Int, Nothing}`: Grow trees with max_leaf_nodes in best-first fashion.
+- `min_impurity_decrease::Float64`: A node will be split if this split induces a decrease of the impurity greater than or equal to this value.
+- `bootstrap::Bool`: Whether bootstrap samples are used when building trees.
+- `oob_score::Bool`: Whether to use out-of-bag samples to estimate the generalization score.
+- `n_jobs::Union{Int, Nothing}`: The number of jobs to run in parallel.
+- `random_state::Union{Int, Nothing}`: Controls both the randomness of the bootstrapping of the samples used when building trees and the sampling of the features to consider when looking for the best split at each node.
+- `verbose::Int`: Controls the verbosity when fitting and predicting.
+- `warm_start::Bool`: When set to true, reuse the solution of the previous call to fit and add more estimators to the ensemble, otherwise, just fit a whole new forest.
+- `ccp_alpha::Float64`: Complexity parameter used for Minimal Cost-Complexity Pruning.
+- `max_samples::Union{Int, Float64, Nothing}`: If bootstrap is True, the number of samples to draw from X to train each base estimator.
+
+# Example
+```julia
+rf = RandomForestRegressor(n_estimators=100, max_depth=10)
+rf(X, y)  # Fit the model
+predictions = rf(X_test)  # Make predictions
+```
+"""
 mutable struct RandomForestRegressor <: AbstractModel
     n_estimators::Int
     criterion::String
@@ -62,6 +95,17 @@ mutable struct RandomForestRegressor <: AbstractModel
     end
 end
 
+"""
+    (forest::RandomForestRegressor)(X::AbstractMatrix, y::AbstractVector)
+Fit the random forest regressor.
+
+# Arguments
+- `X::AbstractMatrix`: The input samples.
+- `y::AbstractVector`: The target values.
+
+# Returns
+- `RandomForestRegressor`: The fitted model.
+"""
 function (forest::RandomForestRegressor)(X::AbstractMatrix, y::AbstractVector)
     n_samples, n_features = size(X)
     forest.n_features_in_ = n_features
@@ -121,6 +165,16 @@ function (forest::RandomForestRegressor)(X::AbstractMatrix, y::AbstractVector)
     return forest
 end
 
+"""
+    (forest::RandomForestRegressor)(X::AbstractMatrix)
+Predict regression target for X.
+
+# Arguments
+- `X::AbstractMatrix`: The input samples.
+
+# Returns
+- `Vector{Float64}`: The predicted values.
+"""
 function (forest::RandomForestRegressor)(X::AbstractMatrix)
     if !forest.fitted
         throw(ErrorException("This RandomForestRegressor instance is not fitted yet. Call the model with training data before using it for predictions."))
@@ -136,6 +190,17 @@ function (forest::RandomForestRegressor)(X::AbstractMatrix)
     return predictions ./ forest.n_estimators
 end
 
+"""
+get_max_features(forest::RandomForestRegressor, n_features::Int)
+Get the number of features to consider when looking for the best split.
+
+# Arguments
+- `forest::RandomForestRegressor`: The random forest regressor.
+- `n_features::Int`: The total number of features.
+
+# Returns
+# `Int`: The number of features to consider.
+"""
 function get_max_features(forest::RandomForestRegressor, n_features::Int)
     if forest.max_features === nothing || forest.max_features == 1.0
         return n_features
@@ -152,6 +217,18 @@ function get_max_features(forest::RandomForestRegressor, n_features::Int)
     end
 end
 
+"""
+    compute_oob_score(forest::RandomForestRegressor, X::AbstractMatrix, y::AbstractVector)
+Compute out-of-bag (OOB) score for the random forest regressor.
+
+# Arguments
+- `forest::RandomForestRegressor`: The random forest regressor.
+- `X::AbstractMatrix`: The input samples.
+- `y::AbstractVector`: The target values.
+
+# Returns
+- `Tuple{Float64, Vector{Float64}}`: The OOB score and OOB predictions.
+"""
 function compute_oob_score(forest::RandomForestRegressor, X::AbstractMatrix, y::AbstractVector)
     n_samples = size(X, 1)
     oob_predictions = zeros(n_samples)
@@ -167,6 +244,14 @@ function compute_oob_score(forest::RandomForestRegressor, X::AbstractMatrix, y::
     return 1 - oob_score, oob_predictions ./ max.(n_predictions, 1)
 end
 
+"""
+    Base.show(io::IO, forest::RandomForestRegressor)
+Custom show method for RandomForestRegressor.
+
+# Arguments
+- `io::IO`: The I/O stream.
+- `forest::RandomForestRegressor`: The random forest regressor to display.
+"""
 function Base.show(io::IO, forest::RandomForestRegressor)
     println(io, "RandomForestRegressor(")
     println(io, "  n_estimators=$(forest.n_estimators),")
