@@ -9,7 +9,6 @@ makedocs(
         analytics = "UA-XXXXXXXXX-X",
     ),
     modules = [NovaML],
-    public = true,
     authors = "Ilker Arslan and contributors",
     repo = "https://github.com/ilkerarslan/NovaML.jl/blob/{commit}{path}#{line}",
     pages = [
@@ -33,7 +32,6 @@ makedocs(
             "Clustering" => "models/clustering.md",
             "Dimensionality Reduction" => "models/dimensionality_reduction.md",
         ],
-        "API Reference" => "api.md",
         "Contributing" => "contribute.md",
         "FAQ" => "faq.md",
     ],
