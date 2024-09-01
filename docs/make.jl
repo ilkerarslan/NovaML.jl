@@ -7,7 +7,7 @@ using NovaML.Tree
 makedocs(
     sitename = "NovaML.jl",
     format = Documenter.HTML(
-        prettyurls = get(ENV, "CI", nothing) == "true",
+        prettyurls = true,
         canonical = "https://ilkerarslan.github.io/NovaML.jl/stable/",
         repolink = "https://github.com/ilkerarslan/NovaML.jl",
         assets = String[],
@@ -43,10 +43,12 @@ makedocs(
     ],
     doctest = true,
     linkcheck = true,
+    warnonly = [:autodocs_block, :missing_docs],
+    build = "docs"
 )
 
 deploydocs(
     repo = "github.com/ilkerarslan/NovaML.jl.git",
     devbranch = "master",
     push_preview = true,
-)
+    target = "docs")
