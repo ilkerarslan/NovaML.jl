@@ -32,6 +32,7 @@ makedocs(
             "Clustering" => "models/clustering.md",
             "Dimensionality Reduction" => "models/dimensionality_reduction.md",
         ],
+        "API Reference" => "api.md",
         "Contributing" => "contribute.md",
         "FAQ" => "faq.md",
     ],
