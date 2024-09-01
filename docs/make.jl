@@ -44,8 +44,7 @@ makedocs(
     doctest = true,
     linkcheck = true,
     warnonly = [:autodocs_block, :missing_docs],
-    build = "docs"
-)
+    build = "docs")
 
 deploydocs(
     repo = "github.com/ilkerarslan/NovaML.jl.git",
