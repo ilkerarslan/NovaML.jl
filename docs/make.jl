@@ -9,6 +9,7 @@ makedocs(
         analytics = "UA-XXXXXXXXX-X",
     ),
     modules = [NovaML],
+    public = true,
     authors = "Ilker Arslan and contributors",
     repo = "https://github.com/ilkerarslan/NovaML.jl/blob/{commit}{path}#{line}",
     pages = [
