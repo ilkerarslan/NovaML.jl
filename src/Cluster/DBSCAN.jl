@@ -195,7 +195,6 @@ params::Dict: Parameter names mapped to their values.
 
 # Examples
 """
-# Helper functions
 function get_params(dbscan::DBSCAN)
     return Dict(
         :eps => dbscan.eps,
