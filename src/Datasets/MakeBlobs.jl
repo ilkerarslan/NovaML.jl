@@ -1,58 +1,6 @@
 using Random
 using LinearAlgebra
 
-"""
-    make_blobs(;
-        n_samples::Union{Int, Vector{Int}} = 100,
-        n_features::Int = 2,
-        centers::Union{Int, Matrix{Float64}} = nothing,
-        cluster_std::Union{Float64, Vector{Float64}} = 1.0,
-        center_box::Tuple{Float64, Float64} = (-10.0, 10.0),
-        shuffle::Bool = true,
-        random_state::Union{Int, Nothing} = nothing,
-        return_centers::Bool = false
-    )
-
-Generate isotropic Gaussian blobs for clustering.
-
-# Arguments
-- `n_samples::Union{Int, Vector{Int}}`: The total number of points equally divided among clusters, or the number of samples per cluster.
-- `n_features::Int`: The number of features for each sample.
-- `centers::Union{Int, Matrix{Float64}}`: The number of centers to generate, or a matrix of center locations.
-- `cluster_std::Union{Float64, Vector{Float64}}`: The standard deviation of the clusters.
-- `center_box::Tuple{Float64, Float64}`: The bounding box for each cluster center when centers are generated at random.
-- `shuffle::Bool`: Shuffle the samples.
-- `random_state::Union{Int, Nothing}`: Determines random number generation for dataset creation.
-- `return_centers::Bool`: If true, returns the centers in addition to X and y.
-
-# Returns
-- If `return_centers` is false:
-    - `X::Matrix{Float64}`: Generated samples.
-    - `y::Vector{Int}`: The integer labels for cluster membership of each sample.
-- If `return_centers` is true:
-    - `X::Matrix{Float64}`: Generated samples.
-    - `y::Vector{Int}`: The integer labels for cluster membership of each sample.
-    - `centers::Matrix{Float64}`: The centers used to generate the data.
-
-# Description
-This function generates samples from isotropic Gaussian blobs for clustering.
-It can be used for testing clustering algorithms or as a simple dataset for demonstration purposes.
-
-# Example
-```julia
-# Generate a simple dataset with 3 clusters
-X, y = make_blobs(n_samples=300, centers=3, n_features=2, random_state=42)
-
-# Generate a dataset with specified centers and return the centers
-centers = [0 0; 1 1; 2 2]
-X, y, centers = make_blobs(n_samples=300, centers=centers, cluster_std=0.5, return_centers=true)
-
-# Notes
-If centers is an int, it is interpreted as the number of centers to generate, and they are generated randomly within center_box.
-- If centers is a 2-d array, it is interpreted as the actual centers to use, and n_features is ignored in this case.
-- If n_samples is an int, it is interpreted as the total number of samples, which are then evenly divided among clusters.
-- If n_samples is an array, it is interpreted as the number of samples per cluster.
-"""
 function make_blobs(;
     n_samples::Union{Int, Vector{Int}} = 100,
     n_features::Int = 2,

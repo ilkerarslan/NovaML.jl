@@ -1,41 +1,6 @@
 using LinearAlgebra
 import Statistics: mean, cov
 
-"""
-    PCA
-
-Principal Component Analysis (PCA).
-
-Linear dimensionality reduction using Singular Value Decomposition of the
-data to project it to a lower dimensional space.
-
-# Fields
-- `n_components::Union{Int, Float64, String, Nothing}`: Number of components to keep.
-- `whiten::Bool`: When True, the `components_` vectors are multiplied by the square root of n_samples and then divided by the singular values to ensure uncorrelated outputs with unit component-wise variances.
-- `fitted::Bool`: Whether the PCA model has been fitted to data.
-
-# Fitted Attributes
-- `components_::Union{Matrix{Float64}, Nothing}`: Principal axes in feature space, representing the directions of maximum variance in the data.
-- `explained_variance_::Union{Vector{Float64}, Nothing}`: The amount of variance explained by each of the selected components.
-- `explained_variance_ratio_::Union{Vector{Float64}, Nothing}`: Percentage of variance explained by each of the selected components.
-- `singular_values_::Union{Vector{Float64}, Nothing}`: The singular values corresponding to each of the selected components.
-- `mean_::Union{Vector{Float64}, Nothing}`: Per-feature empirical mean, estimated from the training set.
-- `n_samples_::Union{Int, Nothing}`: Number of samples in the training data.
-- `n_features_::Union{Int, Nothing}`: Number of features in the training data.
-- `n_components_::Union{Int, Nothing}`: The estimated number of components.
-- `noise_variance_::Union{Float64, Nothing}`: The estimated noise covariance following the Probabilistic PCA model.
-
-# Methods
-- `(::PCA)(X::AbstractMatrix)`: Fit the model with X and apply dimensionality reduction on X.
-- `(::PCA)(X::AbstractMatrix, mode::Symbol)`: Transform data back to its original space when mode is :inverse_transform.
-
-# Example
-```julia
-pca = PCA(n_components=2)
-X_transformed = pca(X)
-X_inverse = pca(X_transformed, :inverse_transform)
-```
-"""
 mutable struct PCA
     n_components::Union{Int, Float64, String, Nothing}
     whiten::Bool
@@ -122,14 +87,6 @@ function (pca::PCA)(X::AbstractMatrix{T}, mode::Symbol) where T <: Real
     end
 end
 
-"""
-    Base.show(io::IO, pca::PCA)
-Custom show method for PCA.
-
-# Arguments
-- `io::IO`: The I/O stream.
-- `pca::PCA`: The PCA model to display.
-"""
 function Base.show(io::IO, pca::PCA)
     fitted_status = pca.fitted ? "fitted" : "not fitted"
     n_components = pca.fitted ? pca.n_components_ : pca.n_components

@@ -4,34 +4,6 @@ import ...NovaML: AbstractModel
 using Statistics
 import ...NovaML: AbstractModel
 
-"""
-    VotingClassifier <: AbstractModel
-
-A Voting Classifier for combining multiple machine learning classifiers.
-
-This classifier combines a number of estimators to create a single classifier that makes predictions
-based on either hard voting (majority vote) or soft voting (weighted average of predicted probabilities).
-
-# Fields
-- `estimators::Vector{Tuple{String, Any}}`: List of (name, estimator) tuples.
-- `voting::Symbol`: The voting strategy, either :hard for majority voting or :soft for probability voting.
-- `weights::Union{Vector{Float64}, Nothing}`: Sequence of weights for each estimator in soft voting.
-- `flatten_transform::Bool`: Affects the shape of transform output.
-- `verbose::Bool`: If true, prints progress messages during fitting.
-
-# Fitted Attributes
-- `estimators_::Vector{Any}`: The fitted estimators.
-- `classes_::Vector{Any}`: The class labels.
-- `fitted::Bool`: Whether the classifier is fitted.
-
-# Example
-```julia
-estimators = [("lr", LogisticRegression()), ("rf", RandomForestClassifier())]
-vc = VotingClassifier(estimators=estimators, voting=:soft)
-vc(X, y)  # Fit the classifier
-predictions = vc(X_test)  # Make predictions
-```
-"""
 mutable struct VotingClassifier <: AbstractModel
     estimators::Vector{Tuple{String, Any}}
     voting::Symbol
@@ -61,17 +33,6 @@ mutable struct VotingClassifier <: AbstractModel
     end
 end
 
-"""
-    (vc::VotingClassifier)(X::AbstractMatrix, y::AbstractVector)
-Fit the voting classifier.
-
-# Arguments
-- `X::AbstractMatrix`: The input samples.
-- `y::AbstractVector`: The target values (class labels).
-
-# Returns
-- `VotingClassifier`: The fitted classifier.
-"""
 function (vc::VotingClassifier)(X::AbstractMatrix, y::AbstractVector)
     vc.classes_ = sort(unique(y))
     vc.estimators_ = Any[]
@@ -89,18 +50,6 @@ function (vc::VotingClassifier)(X::AbstractMatrix, y::AbstractVector)
     return vc
 end
 
-"""
-    (vc::VotingClassifier)(X::AbstractMatrix; type=nothing)
-Predict class labels for X.
-
-# Arguments
-- `X::AbstractMatrix`: The input samples.
-- `type`: If set to :probs, return probability estimates for each class.
-
-# Returns
-- If `type` is `:probs`, returns probabilities of each class.
-- Otherwise, returns predicted class labels.
-"""
 function (vc::VotingClassifier)(X::AbstractMatrix; type=nothing)
     if !vc.fitted
         throw(ErrorException("This VotingClassifier instance is not fitted yet. Call the model with training data before using it for predictions."))
@@ -158,20 +107,6 @@ function (vc::VotingClassifier)(X::AbstractMatrix; type=nothing)
     end
 end
 
-"""
-    transform(vc::VotingClassifier, X::AbstractMatrix)
-Return class labels or probabilities for X for each estimator.
-
-# Arguments
-- `vc::VotingClassifier`: The fitted voting classifier.
-- `X::AbstractMatrix`: The input samples.
-
-# Returns
-- If `voting` is `:soft`, returns the probabilities for each class for each estimator.
-- If `voting` is `:hard`, returns the class label predictions of each estimator.
-
-The shape of the return depends on the `flatten_transform` parameter.
-"""
 function transform(vc::VotingClassifier, X::AbstractMatrix)
     if !vc.fitted
         throw(ErrorException("This VotingClassifier instance is not fitted yet. Call the model with training data before using transform."))
@@ -200,14 +135,6 @@ function transform(vc::VotingClassifier, X::AbstractMatrix)
     end
 end
 
-"""
-    Base.show(io::IO, vc::VotingClassifier)
-Custom show method for VotingClassifier.
-
-# Arguments
-- `io::IO`: The I/O stream.
-- `vc::VotingClassifier`: The voting classifier to display.
-"""
 function Base.show(io::IO, vc::VotingClassifier)
     estimator_names = join([name for (name, _) in vc.estimators], ", ")
     print(io, "VotingClassifier(estimators=[$estimator_names], ",

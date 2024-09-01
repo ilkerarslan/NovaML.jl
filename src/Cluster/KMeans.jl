@@ -4,28 +4,6 @@ using Statistics
 
 import ...NovaML: AbstractModel
 
-"""
-    KMeans <: AbstractModel
-
-Represents the K-Means clustering algorithm.
-
-# Fields
-- `n_clusters::Int`: The number of clusters to form.
-- `init::Union{String, Matrix{Float64}, Function}`: Method for initialization.
-- `n_init::Union{Int, String}`: Number of time the k-means algorithm will be run with different centroid seeds.
-- `max_iter::Int`: Maximum number of iterations of the k-means algorithm for a single run.
-- `tol::Float64`: Relative tolerance with regards to inertia to declare convergence.
-- `verbose::Int`: Verbosity mode.
-- `random_state::Union{Int, Nothing}`: Determines random number generation for centroid initialization.
-- `copy_x::Bool`: When pre-computing distances it is more numerically accurate to center the data first.
-- `algorithm::String`: K-means algorithm to use.
-
-# Fitted Attributes
-- `cluster_centers_::Union{Matrix{Float64}, Nothing}`: Coordinates of cluster centers.
-- `labels_::Union{Vector{Int}, Nothing}`: Labels of each point.
-- `inertia_::Union{Float64, Nothing}`: Sum of squared distances of samples to their closest cluster center.
-- `n_iter_::Union{Int, Nothing}`: Number of iterations run.
-"""
 mutable struct KMeans <: AbstractModel
     n_clusters::Int
     init::Union{String, Matrix{Float64}, Function}
@@ -59,20 +37,6 @@ mutable struct KMeans <: AbstractModel
     end
 end
 
-"""
-    (kmeans::KMeans)(X::AbstractVecOrMat{Float64}, y=nothing; sample_weight=nothing)
-
-Compute k-means clustering.
-
-# Arguments
-- `X::AbstractVecOrMat{Float64}`: Training instances to cluster.
-- `y`: Ignored. Not used, present for API consistency by convention.
-- `sample_weight`: The weights for each observation in X.
-
-# Returns
-- If the model is not fitted, returns the fitted model.
-- If the model is already fitted, returns the predicted labels for X.
-"""
 function (kmeans::KMeans)(X::AbstractVecOrMat{Float64}, y=nothing; sample_weight=nothing)
     # If X is a vector, convert it to a matrix
     X_matrix = X isa AbstractVector ? reshape(X, 1, :) : X
@@ -135,18 +99,6 @@ function (kmeans::KMeans)(X::AbstractVecOrMat{Float64}, y=nothing; sample_weight
     end
 end
 
-"""
-    initialize_centroids(kmeans::KMeans, X::Matrix{Float64})
-
-Initialize the centroids for K-Means clustering.
-
-# Arguments
-- `kmeans::KMeans`: The KMeans instance.
-- `X::Matrix{Float64}`: The input data.
-
-# Returns
-- `Matrix{Float64}`: The initial centroids.
-"""
 function initialize_centroids(kmeans::KMeans, X::Matrix{Float64})
     n_samples, n_features = size(X)
     
@@ -170,18 +122,6 @@ function initialize_centroids(kmeans::KMeans, X::Matrix{Float64})
     return centroids
 end
 
-"""
-    kmeans_plus_plus(X::Matrix{Float64}, n_clusters::Int)
-
-Perform K-Means++ initialization.
-
-# Arguments
-- `X::Matrix{Float64}`: The input data.
-- `n_clusters::Int`: The number of clusters.
-
-# Returns
-- `Matrix{Float64}`: The initial centroids chosen by K-Means++.
-"""
 function kmeans_plus_plus(X::Matrix{Float64}, n_clusters::Int)
     n_samples, n_features = size(X)
     centroids = zeros(n_clusters, n_features)
@@ -206,36 +146,10 @@ function kmeans_plus_plus(X::Matrix{Float64}, n_clusters::Int)
     return centroids
 end
 
-"""
-    assign_labels(X::AbstractMatrix{Float64}, centroids::Matrix{Float64})
-
-Assign labels to data points based on the nearest centroid.
-
-# Arguments
-- `X::AbstractMatrix{Float64}`: The input data.
-- `centroids::Matrix{Float64}`: The current centroids.
-
-# Returns
-- `Vector{Int}`: The assigned labels for each data point.
-"""
 function assign_labels(X::AbstractMatrix{Float64}, centroids::Matrix{Float64})
     return [argmin([norm(x - c)^2 for c in eachrow(centroids)]) for x in eachrow(X)]
 end
 
-"""
-    update_centroids(X::Matrix{Float64}, labels::Vector{Int}, n_clusters::Int, sample_weight=nothing)
-
-Update the centroids based on the current label assignments.
-
-# Arguments
-- `X::Matrix{Float64}`: The input data.
-- `labels::Vector{Int}`: The current label assignments.
-- `n_clusters::Int`: The number of clusters.
-- `sample_weight`: The weights for each observation in X.
-
-# Returns
-- `Matrix{Float64}`: The updated centroids.
-"""
 function update_centroids(X::Matrix{Float64}, labels::Vector{Int}, n_clusters::Int, sample_weight=nothing)
     n_samples, n_features = size(X)
     centroids = zeros(n_clusters, n_features)
@@ -256,20 +170,6 @@ function update_centroids(X::Matrix{Float64}, labels::Vector{Int}, n_clusters::I
     return centroids
 end
 
-"""
-    compute_inertia(X::Matrix{Float64}, centroids::Matrix{Float64}, labels::Vector{Int}, sample_weight=nothing)
-
-Compute the inertia, the sum of squared distances of samples to their closest cluster center.
-
-# Arguments
-- `X::Matrix{Float64}`: The input data.
-- `centroids::Matrix{Float64}`: The current centroids.
-- `labels::Vector{Int}`: The current label assignments.
-- `sample_weight`: The weights for each observation in X.
-
-# Returns
-- `Float64`: The computed inertia.
-"""
 function compute_inertia(X::Matrix{Float64}, centroids::Matrix{Float64}, labels::Vector{Int}, sample_weight=nothing)
     if sample_weight === nothing
         sample_weight = ones(size(X, 1))
@@ -277,18 +177,6 @@ function compute_inertia(X::Matrix{Float64}, centroids::Matrix{Float64}, labels:
     return sum(sample_weight .* [norm(X[i, :] - centroids[labels[i], :])^2 for i in 1:size(X, 1)])
 end
 
-"""
-    get_params(kmeans::KMeans; deep=true)
-
-Get parameters for this estimator.
-
-# Arguments
-- `kmeans::KMeans`: The KMeans instance.
-- `deep::Bool`: If True, will return the parameters for this estimator and contained subobjects that are estimators.
-
-# Returns
-- `Dict`: Parameter names mapped to their values.
-"""
 function get_params(kmeans::KMeans; deep=true)
     return Dict(
         "n_clusters" => kmeans.n_clusters,
@@ -303,18 +191,6 @@ function get_params(kmeans::KMeans; deep=true)
     )
 end
 
-"""
-    set_params!(kmeans::KMeans; params...)
-
-Set the parameters of this estimator.
-
-# Arguments
-- `kmeans::KMeans`: The KMeans instance.
-- `params...`: Estimator parameters.
-
-# Returns
-- `KMeans`: The estimator instance.
-"""
 function set_params!(kmeans::KMeans; params...)
     for (key, value) in params
         setproperty!(kmeans, Symbol(key), value)
@@ -322,56 +198,16 @@ function set_params!(kmeans::KMeans; params...)
     return kmeans
 end
 
-"""
-    fit_predict(kmeans::KMeans, X::Matrix{Float64}, y=nothing; sample_weight=nothing)
-
-Compute cluster centers and predict cluster index for each sample.
-
-# Arguments
-- `kmeans::KMeans`: The KMeans instance.
-- `X::Matrix{Float64}`: New data to transform.
-- `y`: Ignored.
-- `sample_weight`: The weights for each observation in X.
-
-# Returns
-- `Vector{Int}`: Index of the cluster each sample belongs to.
-"""
 function fit_predict(kmeans::KMeans, X::Matrix{Float64}, y=nothing; sample_weight=nothing)
     kmeans(X, y; sample_weight=sample_weight)
     return kmeans.labels_
 end
 
-"""
-    fit_transform(kmeans::KMeans, X::Matrix{Float64}, y=nothing; sample_weight=nothing)
-
-Compute clustering and transform X to cluster-distance space.
-
-# Arguments
-- `kmeans::KMeans`: The KMeans instance.
-- `X::Matrix{Float64}`: New data to transform.
-- `y`: Ignored.
-- `sample_weight`: The weights for each observation in X.
-
-# Returns
-- `Matrix{Float64}`: X transformed in the new space.
-"""
 function fit_transform(kmeans::KMeans, X::Matrix{Float64}, y=nothing; sample_weight=nothing)
     kmeans(X, y; sample_weight=sample_weight)
     return transform(kmeans, X)
 end
 
-"""
-    transform(kmeans::KMeans, X::Matrix{Float64})
-
-Transform X to a cluster-distance space.
-
-# Arguments
-- `kmeans::KMeans`: The KMeans instance.
-- `X::Matrix{Float64}`: New data to transform.
-
-# Returns
-- `Matrix{Float64}`: X transformed in the new space.
-"""
 function transform(kmeans::KMeans, X::Matrix{Float64})
     if kmeans.cluster_centers_ === nothing
         error("KMeans model is not fitted yet. Call the model with training data first.")
@@ -379,20 +215,6 @@ function transform(kmeans::KMeans, X::Matrix{Float64})
     return [norm(x - c)^2 for x in eachrow(X), c in eachrow(kmeans.cluster_centers_)]
 end
 
-"""
-    score(kmeans::KMeans, X::Matrix{Float64}, y=nothing; sample_weight=nothing)
-
-Opposite of the value of X on the K-means objective.
-
-# Arguments
-- `kmeans::KMeans`: The KMeans instance.
-- `X::Matrix{Float64}`: New data.
-- `y`: Ignored.
-- `sample_weight`: The weights for each observation in X.
-
-# Returns
-- `Float64`: Opposite of the value of X on the K-means objective.
-"""
 function score(kmeans::KMeans, X::Matrix{Float64}, y=nothing; sample_weight=nothing)
     if kmeans.cluster_centers_ === nothing
         error("KMeans model is not fitted yet. Call the model with training data first.")
@@ -401,15 +223,6 @@ function score(kmeans::KMeans, X::Matrix{Float64}, y=nothing; sample_weight=noth
     return -compute_inertia(X, kmeans.cluster_centers_, labels, sample_weight)
 end
 
-"""
-    Base.show(io::IO, kmeans::KMeans)
-
-Custom show method for KMeans instances.
-
-# Arguments
-- `io::IO`: The I/O stream.
-- `kmeans::KMeans`: The KMeans instance to display.
-"""
 function Base.show(io::IO, kmeans::KMeans)
     fitted_status = kmeans.cluster_centers_ === nothing ? "unfitted" : "fitted"
     print(io, "KMeans(n_clusters=$(kmeans.n_clusters), $(fitted_status))")

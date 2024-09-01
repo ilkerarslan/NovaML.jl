@@ -1,8 +1,4 @@
 using Documenter, NovaML
-using NovaML.Cluster
-using NovaML.Decomposition
-using NovaML.Ensemble
-using NovaML.Tree
 
 makedocs(
     sitename = "NovaML.jl",

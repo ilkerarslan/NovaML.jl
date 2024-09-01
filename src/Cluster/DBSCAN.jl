@@ -3,51 +3,6 @@ using SparseArrays
 using ...NovaML.Neighbors: KNeighborsClassifier
 using Distances
 
-"""
-    DBSCAN
-
-A struct representing the DBSCAN (Density-Based Spatial Clustering of Applications with Noise) clustering algorithm.
-
-# Fields
-- `eps::Float64`: The maximum distance between two samples for one to be considered as in the neighborhood of the other.
-- `min_samples::Int`: The number of samples in a neighborhood for a point to be considered as a core point.
-- `metric::Union{String, Metric}`: The metric to use when calculating distance between instances.
-- `metric_params::Union{Nothing, Dict}`: Additional keyword arguments for the metric function.
-- `algorithm::Symbol`: The algorithm to be used by the NearestNeighbors module.
-- `leaf_size::Int`: Leaf size passed to BallTree or KDTree.
-- `p::Union{Nothing, Float64}`: The power of the Minkowski metric to be used to calculate distance between points.
-- `n_jobs::Union{Nothing, Int}`: The number of parallel jobs to run.
-
-# Fitted Attributes
-- `core_sample_indices_::Vector{Int}`: Indices of core samples.
-- `components_::Matrix{Float64}`: Copy of each core sample found by training.
-- `labels_::Vector{Int}`: Cluster labels for each point in the dataset given to fit().
-- `n_features_in_::Int`: Number of features seen during fit.
-- `feature_names_in_::Vector{String}`: Names of features seen during fit.
-- `fitted::Bool`: Whether the model has been fitted.
-
-# Constructor
-    DBSCAN(;
-        eps::Float64 = 0.5,
-        min_samples::Int = 5,
-        metric::Union{String, Metric} = "euclidean",
-        metric_params::Union{Nothing, Dict} = nothing,
-        algorithm::Symbol = :auto,
-        leaf_size::Int = 30,
-        p::Union{Nothing, Float64} = nothing,
-        n_jobs::Union{Nothing, Int} = nothing
-    )
-
-Constructs a DBSCAN object with the specified parameters.
-
-# Examples
-```julia
-# Create a DBSCAN object with default parameters
-dbscan = DBSCAN()
-
-# Create a DBSCAN object with custom parameters
-dbscan = DBSCAN(eps=0.7, min_samples=10, metric="manhattan")
-"""
 mutable struct DBSCAN
     eps::Float64
     min_samples::Int
@@ -81,25 +36,6 @@ mutable struct DBSCAN
     end
 end
 
-"""
-    (dbscan::DBSCAN)(X::AbstractMatrix, y=nothing; sample_weight=nothing)
-Perform DBSCAN clustering on the input data.
-
-# Arguments
-X::AbstractMatrix: The input data matrix where each row is a sample and each column is a feature.
-y=nothing: Ignored. Present for API consistency.
-sample_weight=nothing: Weight of each sample, used in computing the number of neighbors within eps.
-
-# Returns
-dbscan::DBSCAN: The fitted DBSCAN object.
-
-# Examples
-```julia
-X = rand(100, 5)  # 100 samples, 5 features
-dbscan = DBSCAN(eps=0.5, min_samples=5)
-fitted_dbscan = dbscan(X)
-```
-"""
 function (dbscan::DBSCAN)(X::AbstractMatrix, y=nothing; sample_weight=nothing)
     if !dbscan.fitted
         # Fitting the model
@@ -185,16 +121,6 @@ function (dbscan::DBSCAN)(X::AbstractMatrix, y=nothing; sample_weight=nothing)
     end
 end
 
-"""
-get_params(dbscan::DBSCAN)
-Get parameters for this estimator.
-
-# Returns
-
-params::Dict: Parameter names mapped to their values.
-
-# Examples
-"""
 function get_params(dbscan::DBSCAN)
     return Dict(
         :eps => dbscan.eps,
@@ -208,22 +134,6 @@ function get_params(dbscan::DBSCAN)
     )
 end
 
-"""
-set_params!(dbscan::DBSCAN; kwargs...)
-Set the parameters of this estimator.
-
-# Arguments
-kwargs...: Estimator parameters.
-
-# Returns
-dbscan::DBSCAN: The DBSCAN object.
-
-# Examples
-```julia
-dbscan = DBSCAN()
-set_params!(dbscan, eps=0.8, min_samples=15)
-```
-"""
 function set_params!(dbscan::DBSCAN; kwargs...)
     for (key, value) in kwargs
         setproperty!(dbscan, key, value)
@@ -231,20 +141,6 @@ function set_params!(dbscan::DBSCAN; kwargs...)
     return dbscan
 end
 
-"""
-Base.show(io::IO, dbscan::DBSCAN)
-Custom show method for DBSCAN objects.
-
-# Arguments
-io::IO: The I/O stream to which the representation is written.
-dbscan::DBSCAN: The DBSCAN object to be displayed.
-
-# Examples
-```julia
-dbscan = DBSCAN(eps=0.7, min_samples=10)
-println(dbscan)
-```
-"""
 function Base.show(io::IO, dbscan::DBSCAN)
     params = get_params(dbscan)
     print(io, "DBSCAN(")
