@@ -121,20 +121,6 @@ mutable struct LatentDirichletAllocation
     end
 end
 
-"""
-    (lda::LatentDirichletAllocation)(X::AbstractMatrix{T}; type=nothing) where T <: Real
-Fit the model to X, or transform X if the model is already fitted.
-
-# Arguments
-
-- `X::AbstractMatrix{T}`: Document-term matrix.
-- `type`: Ignored. Present for API consistency.
-
-# Returns
-
-- If the model is not fitted, returns the document-topic distribution after fitting.
-- If the model is already fitted, returns the document-topic distribution for X.
-"""
 function (lda::LatentDirichletAllocation)(X::AbstractMatrix{T}; type=nothing) where T <: Real
     if !lda.fitted
         # Fit and transform
@@ -145,17 +131,6 @@ function (lda::LatentDirichletAllocation)(X::AbstractMatrix{T}; type=nothing) wh
     end
 end
 
-"""
-    _fit_transform(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where T <: Real
-Fit the model to X and return the document-topic distribution.
-
-# Arguments
-- `lda::LatentDirichletAllocation`: The LDA model.
-- `X::AbstractMatrix{T}`: Document-term matrix.
-
-# Returns
-- `Matrix{Float64}`: Document-topic distribution.
-"""
 function _fit_transform(lda::LatentDirichletAllocation, X::AbstractMatrix{T}) where T <: Real
     n_samples, n_features = size(X)
     

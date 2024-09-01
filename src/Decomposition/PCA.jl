@@ -25,6 +25,10 @@ data to project it to a lower dimensional space.
 - `n_components_::Union{Int, Nothing}`: The estimated number of components.
 - `noise_variance_::Union{Float64, Nothing}`: The estimated noise covariance following the Probabilistic PCA model.
 
+# Methods
+- `(::PCA)(X::AbstractMatrix)`: Fit the model with X and apply dimensionality reduction on X.
+- `(::PCA)(X::AbstractMatrix, mode::Symbol)`: Transform data back to its original space when mode is :inverse_transform.
+
 # Example
 ```julia
 pca = PCA(n_components=2)
@@ -51,16 +55,6 @@ mutable struct PCA
     end
 end
 
-"""
-    (pca::PCA)(X::AbstractMatrix{T}) where T <: Real
-Fit the model with X and apply the dimensionality reduction on X.
-
-# Arguments
-- `X::AbstractMatrix{T}`: Training data, where n_samples is the number of samples and n_features is the number of features.
-
-# Returns
-- `Matrix{Float64}`: Transformed values.
-"""
 function (pca::PCA)(X::AbstractMatrix{T}) where T <: Real
     if !pca.fitted
         n_samples, n_features = size(X)
@@ -113,20 +107,6 @@ function (pca::PCA)(X::AbstractMatrix{T}) where T <: Real
     return X_transformed
 end
 
-"""
-    (pca::PCA)(X::AbstractMatrix{T}, mode::Symbol) where T <: Real
-Transform data back to its original space.
-
-# Arguments
-- `X::AbstractMatrix{T}`: New data, where n_samples is the number of samples and n_components is the number of components.
-- `mode::Symbol`: Must be :inverse_transform.
-
-# Returns
-- `Matrix{Float64}`: X_original array.
-
-# Throws
-- `ErrorException`: If mode is not :inverse_transform.
-"""
 function (pca::PCA)(X::AbstractMatrix{T}, mode::Symbol) where T <: Real    
 
     if mode == :inverse_transform
