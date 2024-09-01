@@ -9,6 +9,7 @@ makedocs(
     format = Documenter.HTML(
         prettyurls = get(ENV, "CI", nothing) == "true",
         canonical = "https://ilkerarslan.github.io/NovaML.jl/stable/",
+        repolink = "https://github.com/ilkerarslan/NovaML.jl",
         assets = String[],
         analytics = "UA-XXXXXXXXX-X",
     ),
