@@ -2,16 +2,8 @@ using Documenter, NovaML
 
 makedocs(
     sitename = "NovaML.jl",
-    format = Documenter.HTML(
-        prettyurls = true,
-        canonical = "https://ilkerarslan.github.io/NovaML.jl/stable/",
-        repolink = "https://github.com/ilkerarslan/NovaML.jl",
-        assets = String[],
-        analytics = "UA-XXXXXXXXX-X",
-    ),
+    format = Documenter.HTML(),
     modules = [NovaML],
-    authors = "Ilker Arslan and contributors",
-    repo = "https://github.com/ilkerarslan/NovaML.jl/blob/{commit}{path}#{line}",
     pages = [
         "Home" => "index.md",
         "User Guide" => [
@@ -37,13 +29,8 @@ makedocs(
         "Contributing" => "contribute.md",
         "FAQ" => "faq.md",
     ],
-    doctest = true,
-    linkcheck = true,
-    warnonly = [:autodocs_block, :missing_docs],
-    build = "docs")
+)
 
 deploydocs(
     repo = "github.com/ilkerarslan/NovaML.jl.git",
-    devbranch = "master",
-    push_preview = true,
-    target = "docs")
+)
