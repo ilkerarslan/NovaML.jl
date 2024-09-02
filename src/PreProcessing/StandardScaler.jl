@@ -27,7 +27,7 @@ function (scaler::StandardScaler)(X::AbstractVecOrMat{<:Real}; type::Symbol=:tra
         else
             return (X .- scaler.mean') ./ scaler.std'
         end
-    elseif type == :inverse_transform
+    elseif type == :inverse
         if !scaler.fitted
             throw(ErrorException("StandardScaler is not fitted. Call the scaler with data to fit before using inverse_transform."))
         end
@@ -37,6 +37,6 @@ function (scaler::StandardScaler)(X::AbstractVecOrMat{<:Real}; type::Symbol=:tra
             return X .* scaler.std' .+ scaler.mean'
         end
     else
-        throw(ArgumentError("Invalid type. Use :transform or :inverse_transform."))
+        throw(ArgumentError("Invalid type. Use :transform or :inverse."))
     end
 end
