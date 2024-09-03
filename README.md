@@ -104,10 +104,11 @@ X, y = load_boston(return_X_y=true)
 
 ### PreProcessing
 
-- ``StandardScaler``: Standardize features by removing the mean and scaling to unit variance
+- `StandardScaler`: Standardize features by removing the mean and scaling to unit variance
 - `MinMaxScaler`: Scale features to a given range
 - `LabelEncoder`: Encode categorical features as integers
 - `OneHotEncoder`: Encode categorical features as one-hot vectors
+- `PolynomialFeatures`: Generate polynomial and interaction features up to a specified degree
 
 ### FeatureExtraction
 
@@ -117,11 +118,13 @@ X, y = load_boston(return_X_y=true)
 ### LinearModels
 
 - `Adaline`: Adaptive Linear Neuron
+- `ElasticNet`: Linear regression with combined L1 and L2 priors as regularizer, balancing between Lasso and Ridge models
 - `Lasso`: Linear Model trained with L1 prior as regularizer, useful for producing sparse models
 - `LinearRegression`: Linear regression algorithm
 - `LogisticRegression`: Binary and multiclass logistic regression
 - `Perceptron`: Simple perceptron algorithm
 - `RANSACRegression`: Robust regression using Random Sample Consensus (RANSAC) algorithm. It's particularly effective for fitting models in the presence of significant outliers in the data.
+- `Ridge`: Linear regression with L2 regularization, useful for dealing with multicollinearity in data
 
 ### Tree
 
@@ -130,6 +133,7 @@ X, y = load_boston(return_X_y=true)
 
 ### Ensemble
 
+- `AdaBoostClassifier`: An ensemble method that sequentially applies a base classifier to reweighted versions of the training data, giving more emphasis to incorrectly classified instances in subsequent iterations
 - `BaggingClassifier`: A meta-estimator that fits base classifiers on random subsets of the original dataset and aggregates their predictions to form a final prediction.
 - `GradientBoostingClassifier`: An ensemble method that builds an additive model in a forward stage-wise fashion, allowing for the optimization of arbitrary differentiable loss functions. It uses decision trees as base learners and combines them to create a strong predictive model.
 - `RandomForestClassifier`: An ensemble learning method that constructs multiple decision trees during training and outputs the class that is the mode of the classes of the individual trees.
@@ -160,6 +164,7 @@ X, y = load_boston(return_X_y=true)
 - `recall_score`: Computes the recall score, which is the ratio of true positive predictions to the total actual positives.
 - `roc_auc_score`: Computes the Area Under the Receiver Operating Characteristic Curve (ROC AUC), providing an aggregate measure of classifier performance.
 - `roc_curve`: Produces the values (fpr, tpr) to plot the Receiver Operating Characteristic (ROC) curve, showing the trade-off between true positive rate and false positive rate at various threshold settings.
+- `silhouette_samples`: Computes the silhouette coefficient for each sample in a dataset, measuring how similar an object is to its own cluster compared to other clusters. This metric is useful for evaluating the quality of clustering algorithms.
 
 ### ModelSelection
 
