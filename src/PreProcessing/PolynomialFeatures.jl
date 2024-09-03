@@ -72,7 +72,13 @@ function _transform_dense(poly::PolynomialFeatures, X::AbstractMatrix)
         if all(powers .== 0)
             continue  # Skip the bias term
         end
-        XP[:, i] = prod(X[:, j].^p for (j, p) in enumerate(powers) if p != 0)
+        feature_column = ones(n_samples)
+        for (j, p) in enumerate(powers)
+            if p != 0
+                feature_column .*= X[:, j] .^ p
+            end
+        end
+        XP[:, i] = feature_column
     end
 
     return poly.order == :F ? permutedims(XP) : XP
@@ -80,17 +86,12 @@ end
 
 function _transform_sparse(poly::PolynomialFeatures, X::SparseMatrixCSC)
     n_samples, _ = size(X)
-    
-    if maximum(poly.powers_) > 3
-        X = SparseMatrixCSC(X)  # Convert to CSC if degree > 3
-    else
-        X = SparseMatrixCSR(X)  # Use CSR for faster processing otherwise
-    end
-
     rows, cols, data = Int[], Int[], Float64[]
     
-    for (sample_idx, sample) in enumerate(eachrow(X))
-        sample_data = Dict(zip(sample.nzind, sample.nzval))
+    for sample_idx in 1:n_samples
+        sample = X[sample_idx, :]
+        sample_data = Dict(j => v for (j, v) in zip(sample.nzind, sample.nzval))
+        
         for (feat_idx, powers) in enumerate(eachrow(poly.powers_))
             value = 1.0
             for (col, power) in enumerate(powers)

@@ -110,6 +110,10 @@ X, y = load_boston(return_X_y=true)
 - `OneHotEncoder`: Encode categorical features as one-hot vectors
 - `PolynomialFeatures`: Generate polynomial and interaction features up to a specified degree
 
+### Impute
+
+- `SimpleImputer`: A basic imputation transformer for filling in missing values in datasets using strategies such as mean, median, most frequent, or constant value.
+
 ### FeatureExtraction
 
 - `CountVectorizer`: Convert a collection of text documents to a matrix of token counts, useful for text feature extraction

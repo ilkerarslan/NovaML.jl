@@ -23,13 +23,13 @@ function (encoder::OneHotEncoder)(X::Union{AbstractVector, AbstractMatrix})
 end
 
 function (encoder::OneHotEncoder)(X::Union{AbstractVector, AbstractMatrix}, type::Symbol)
-    if type == :inverse_transform
+    if type == :inverse
         if X isa AbstractVector
             X = reshape(X, :, 1)
         end    
         return _inverse_transform(encoder, X)
     else
-        throw(ErrorException("Type can be :inverse_transform"))
+        throw(ErrorException("Type can be :inverse"))
     end
 end
 

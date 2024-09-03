@@ -16,13 +16,14 @@ iris = load_iris()
 X = iris["data"][:, 3:4]
 y = iris["target"]
 ```
-
 Split data to train and test sets.
 
 ```julia
 using NovaML.ModelSelection
 Xtrn, Xtst, ytrn, ytst = train_test_split(X, y, test_size=0.3, stratify=y)
 ```
+
+Fit and transform `StandardScaler`.
 
 ```julia
 using NovaML.PreProcessing
@@ -41,7 +42,7 @@ Xtrn = stdscaler(Xtrnstd, type=:inverse)
 
 ### MinMaxScaler
 
-Scales features to a [0, 1].
+Scales features to a number between [0, 1].
 
 ```julia
 minmax = MinMaxScaler()
@@ -63,11 +64,17 @@ Categorical variables often need to be encoded into numerical form for machine l
 Encodes target labels with value between 0 and n_classes-1.
 
 ```julia
-encoder = LabelEncoder()
-y_encoded = encoder(y)
+using NovaML.PreProcessing
 
-# To invert the encoding:
-y_original = encoder(y_encoded, type=:inverse_transform)
+lblencode = LabelEncoder()
+
+labels = ["M", "L", "XL", "M", "L", "M"]
+
+# Label encode labels
+labels = lblencode(labels)
+
+# Get the labels back
+lblencode(labels, :inverse)
 ```
 
 ### OneHotEncoder
@@ -75,15 +82,26 @@ y_original = encoder(y_encoded, type=:inverse_transform)
 Encodes categorical features as a one-hot numeric array.
 
 ```julia
-encoder = OneHotEncoder()
-X_encoded = encoder(X)
+using NovaML.PreProcessing
 
-# To invert the encoding:
-X_original = encoder(X_encoded, type=:inverse_transform)
+labels = ["M", "L", "XL", "M", "L", "M"]
+
+ohe = OneHotEncoder()
+onehot = ohe(labels)
+ohe(onehot, :inverse)
+```
+
+### PolynomialFeatures
+
+Generates polynomial and interaction features.
+
+```julia
+poly = PolynomialFeatures(degree=2)
+X_poly = poly(X)
 ```
 
 ## Imputation
-Missing data is a common issue in real-world datasets. NovaML provides tools for handling missing values.
+Missing data is a common issue in real-world datasets. NovaML provides tools for handling missing values. The `strategy` argument must be one of `:mean`, `:median`, `:most_frequent`, or `:constant`.
 
 ### SimpleImputer
 
@@ -95,24 +113,6 @@ using NovaML.Impute
 # Impute missing values with the mean of the column
 imputer = SimpleImputer(strategy=:mean)
 X_imputed = imputer(X)
-
-# Other strategies include :median, :most_frequent, and :constant
-imputer_median = SimpleImputer(strategy=:median)
-imputer_frequent = SimpleImputer(strategy=:most_frequent)
-imputer_constant = SimpleImputer(strategy=:constant, fill_value=0)
-```
-
-## Feature Engineering
-
-NovaML also provides tools for creating new features or transforming existing ones.
-
-### PolynomialFeatures
-
-Generates polynomial and interaction features.
-
-```julia
-poly = PolynomialFeatures(degree=2)
-X_poly = poly(X)
 ```
 
 ## Pipelines
