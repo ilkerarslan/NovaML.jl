@@ -285,7 +285,7 @@ ŷtst = Xtst |> sc |> pca |> lr
 
 It is also possible to create pipelines using NovaML's `Pipe` constructor:
 
- ```julia
+```julia
 using NovaML.Pipelines: pipe
 
 # create a pipeline

@@ -55,12 +55,12 @@ function (cv::CountVectorizer)(raw_documents::AbstractVector{T} where T <: Abstr
 end
 
 function (cv::CountVectorizer)(X::AbstractMatrix; type::Symbol=:transform)
-    if type == :inverse_transform
+    if type == :inverse
         return _inverse_transform(cv, X)
     elseif type == :transform
         error("Use CountVectorizer(raw_documents) for transforming raw documents.")
     else
-        throw(ArgumentError("Invalid type. Use :inverse_transform for inverse transformation."))
+        throw(ArgumentError("Invalid type. Use :inverse for inverse transformation."))
     end
 end
 

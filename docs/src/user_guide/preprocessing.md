@@ -96,8 +96,28 @@ ohe(onehot, :inverse)
 Generates polynomial and interaction features.
 
 ```julia
-poly = PolynomialFeatures(degree=2)
-X_poly = poly(X)
+using NovaML.PreProcessing
+
+X = rand(5, 2)
+# 5×2 Matrix{Float64}:
+#  0.85245   0.405935
+#  0.139957  0.380467
+#  0.730332  0.0418465
+#  0.051091  0.570372
+#  0.730245  0.128763
+
+poly = PolynomialFeatures(
+    degree=2,
+    interaction_only=false,
+    include_bias=true)
+
+Xnew = poly(X)
+# 5×6 Matrix{Float64}:
+#  1.0  0.85245   0.405935   0.72667     0.346039   0.164783
+#  1.0  0.139957  0.380467   0.0195881   0.0532491  0.144755
+#  1.0  0.730332  0.0418465  0.533384    0.0305618  0.00175113
+#  1.0  0.051091  0.570372   0.00261029  0.0291409  0.325324
+#  1.0  0.730245  0.128763   0.533258    0.0940282  0.0165798
 ```
 
 ## Imputation
@@ -108,31 +128,57 @@ Missing data is a common issue in real-world datasets. NovaML provides tools for
 Imputes missing values using a variety of strategies.
 
 ```julia
-using NovaML.Impute
+X = [1.0   2.0   3.0       4.0
+     5.0   6.0    missing  8.0
+    10.0  11.0  12.0        missing]
 
-# Impute missing values with the mean of the column
+using NovaML.Impute
 imputer = SimpleImputer(strategy=:mean)
-X_imputed = imputer(X)
+Ximp = imputer(X)
+
+# 3×4 Matrix{Union{Missing, Float64}}:
+#   1.0   2.0   3.0  4.0
+#   5.0   6.0   7.5  8.0
+#  10.0  11.0  12.0  6.0
 ```
 
 ## Pipelines
 
-You can combine multiple preprocessing steps into a single pipeline for easier management and application. See the Pipelines section for more details.
+You can combine multiple preprocessing steps into a single pipeline for easier management and application.
 
 ```julia
-using NovaML.Pipelines
+using NovaML.PreProcessing: StandardScaler
+using NovaML.Decomposition: PCA
+using NovaML.LinearModel: LogisticRegression
 
+sc = StandardScaler()
+pca = PCA(n_components=2)
+lr = LogisticRegression()
+
+# transform the data and fit the model 
+Xtrn |> sc |> pca |> X -> lr(X, ytrn)
+
+# make predictions
+ŷtst = Xtst |> sc |> pca |> lr
+```
+
+It is also possible to create pipelines using NovaML's `Pipe` constructor:
+
+```julia
+using NovaML.Pipelines: pipe
+
+# create a pipeline
 pipe = pipe(
-    StandardScaler(),
-    PolynomialFeatures(degree=2),
-    LogisticRegression()
-)
+   StandardScaler(),
+   PCA(n_components=2),
+   LogisticRegression())
 
-# Fit the entire pipeline
-pipe(X_train, y_train)
-
-# Make predictions using the pipeline
-y_pred = pipe(X_test)
+# fit the pipe
+pipe(Xtrn, ytrn)
+# make predictions
+ŷ = pipe(Xtst) 
+# make probability predictions
+ŷprobs = pipe(Xtst, type=:probs)
 ```
 
 ## Text Preprocessing
@@ -144,10 +190,58 @@ For text data, NovaML offers vectorization techniques:
 Converts a collection of text documents to a matrix of token counts.
 
 ```julia
+docs = [
+    "Julia was designed for high performance",
+    "Julia uses multiple dispatch as a paradigm",
+    "Julia is dynamically typed, feels like a scripting language",
+    "But can also optionally be separately compiled",
+    "Julia is an open source project"];
+
 using NovaML.FeatureExtraction
 
-vectorizer = CountVectorizer()
-X_counts = vectorizer(documents)
+countvec = CountVectorizer();
+bag = countvec(docs);
+countvec.vocabulary
+
+# Dict{String, Int64} with 30 entries:
+#   "scripting"   => 25
+#   "high"        => 14
+#   "feels"       => 12
+#   "is"          => 15
+#   "separately"  => 26
+#   "language"    => 17
+#   "typed"       => 28
+#   "but"         => 6
+#   "a"           => 1
+#   "for"         => 13
+#   "optionally"  => 21
+#   "paradigm"    => 22
+#   "was"         => 30
+#   "dynamically" => 11
+#   "also"        => 2
+#   "an"          => 3
+#   "multiple"    => 19
+#   "be"          => 5
+#   "julia"       => 16
+#   "project"     => 24
+#   "uses"        => 29
+#   "source"      => 27
+#   "open"        => 20
+#   "performance" => 23
+#   "compiled"    => 8
+#   "designed"    => 9
+#   "as"          => 4
+#   "can"         => 7
+#   "like"        => 18
+#   "dispatch"    => 10
+
+countvec(bag, type=:inverse)
+# 5-element Vector{String}:
+#  "designed for high julia performance was"
+#  "a as dispatch julia multiple paradigm uses"
+#  "a dynamically feels is julia language like scripting typed"      
+#  "also be but can compiled optionally separately"
+#  "an is julia open project source"
 ```
 
 ### TfidfVectorizer
@@ -155,8 +249,15 @@ X_counts = vectorizer(documents)
 Converts a collection of raw documents to a matrix of TF-IDF features.
 
 ```julia
-vectorizer = TfidfVectorizer()
-X_tfidf = vectorizer(documents)
+tfidf = TfidfVectorizer()
+
+result = tfidf(docs)
+tfidf.vocabulary
+tfidf(result, type=:inverse)
+
+new_docs = [" The talk on the Unreasonable Effectiveness of Multiple Dispatch explains why it works so well."]
+Xnew = tfidf(new_docs)
+
 ```
 
 Most preprocessing transforms in NovaML follow the functor pattern: transform(X) both fits the transformer to the data and applies the transformation. For separate fitting and transforming (e.g., when you want to apply the same transformation to test data), you can use the fitted transformer directly on new data.

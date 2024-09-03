@@ -64,10 +64,10 @@ function (tfidf::TfidfVectorizer)(X::AbstractMatrix; type::Symbol=:transform)
             throw(ErrorException("TfidfVectorizer is not fitted"))
         end
         return _transform(tfidf, X)
-    elseif type == :inverse_transform
-        return tfidf.cv(X, type=:inverse_transform)
+    elseif type == :inverse
+        return tfidf.cv(X, type=:inverse)
     else
-        throw(ArgumentError("Invalid type. Use :transform or :inverse_transform."))
+        throw(ArgumentError("Invalid type. Use :transform or :inverse."))
     end
 end
 
