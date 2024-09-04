@@ -176,3 +176,5 @@ You can inspect the training process by looking at the loss history:
 ```julia
 losses = lr.losses
 ```
+
+For the full list of models you can check **Core Concepts** page or **API Reference**.
