@@ -8,7 +8,6 @@ mutable struct AgglomerativeClustering
     distance_threshold::Union{Float64, Nothing}
     compute_distances::Bool
     
-    # Fitted attributes
     labels_::Vector{Int}
     n_leaves_::Int
     n_connected_components_::Int
@@ -42,13 +41,10 @@ end
 function (clustering::AgglomerativeClustering)(X::AbstractMatrix; y=nothing)
     n_samples, n_features = size(X)
     
-    # Compute distance matrix
     distances = compute_distances(X, clustering.metric)
     
-    # Initialize each point as a cluster
     clusters = collect(1:n_samples)
     
-    # Main clustering loop
     while length(unique(clusters)) > clustering.n_clusters
         # Find the two closest clusters
         min_dist = Inf
@@ -62,12 +58,10 @@ function (clustering::AgglomerativeClustering)(X::AbstractMatrix; y=nothing)
             end
         end
         
-        # Check distance threshold
         if clustering.distance_threshold !== nothing && min_dist > clustering.distance_threshold
             break
-        end
+        end        
         
-        # Merge clusters
         old_cluster = clusters[min_j]
         new_cluster = clusters[min_i]
         for i in 1:n_samples
@@ -76,7 +70,6 @@ function (clustering::AgglomerativeClustering)(X::AbstractMatrix; y=nothing)
             end
         end
         
-        # Update distances
         for k in 1:n_samples
             if k != min_i && k != min_j
                 new_dist = if clustering.linkage == "single"
@@ -95,11 +88,9 @@ function (clustering::AgglomerativeClustering)(X::AbstractMatrix; y=nothing)
         distances[:, min_j] .= Inf
     end
     
-    # Assign cluster labels
     unique_clusters = unique(clusters)
     clustering.labels_ = [findfirst(==(c), unique_clusters) for c in clusters]
     
-    # Compute other attributes
     clustering.n_leaves_ = n_samples
     clustering.n_connected_components_ = length(unique_clusters)
     
