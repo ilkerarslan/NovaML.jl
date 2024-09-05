@@ -10,7 +10,7 @@ makedocs(
             "Getting Started" => "user_guide/getting_started.md",
             "Core Concepts" => "user_guide/core_concepts.md",
             "Data Preprocessing" => "user_guide/preprocessing.md",
-            "Model Training" => "user_guide/model_training.md",
+            "Model Training" => "user_guide/modeltraining.md",
             "Model Evaluation" => "user_guide/model_evaluation.md",
             "Feature Engineering" => "user_guide/feature_engineering.md",
             "Pipelines" => "user_guide/pipelines.md",
