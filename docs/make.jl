@@ -27,7 +27,6 @@ makedocs(
         ],
         "API Reference" => "api.md",
         "Contributing" => "contribute.md",
-        "FAQ" => "faq.md",
     ],
 )
 
