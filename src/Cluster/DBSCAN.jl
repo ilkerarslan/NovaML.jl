@@ -38,7 +38,6 @@ end
 
 function (dbscan::DBSCAN)(X::AbstractMatrix, y=nothing; sample_weight=nothing)
     if !dbscan.fitted
-        # Fitting the model
         n_samples, n_features = size(X)
         dbscan.n_features_in_ = n_features
         
@@ -46,7 +45,6 @@ function (dbscan::DBSCAN)(X::AbstractMatrix, y=nothing; sample_weight=nothing)
             sample_weight = ones(n_samples)
         end
         
-        # Create distance matrix
         dist_metric = if typeof(dbscan.metric) == String
             if dbscan.metric == "euclidean"
                 Euclidean()
@@ -70,14 +68,12 @@ function (dbscan::DBSCAN)(X::AbstractMatrix, y=nothing; sample_weight=nothing)
         labels = fill(-1, n_samples)
         core_samples = falses(n_samples)
         
-        # Find core samples
         for i in 1:n_samples
             if sum(sample_weight[neighbors[i]]) >= dbscan.min_samples
                 core_samples[i] = true
             end
         end
         
-        # Assign cluster labels
         cluster_label = 0
         for i in 1:n_samples
             if labels[i] != -1 || !core_samples[i]
@@ -87,7 +83,6 @@ function (dbscan::DBSCAN)(X::AbstractMatrix, y=nothing; sample_weight=nothing)
             cluster_label += 1
             labels[i] = cluster_label
             
-            # Expand cluster
             stack = neighbors[i]
             while !isempty(stack)
                 neighbor = pop!(stack)
@@ -100,7 +95,6 @@ function (dbscan::DBSCAN)(X::AbstractMatrix, y=nothing; sample_weight=nothing)
             end
         end
         
-        # Store results
         dbscan.labels_ = labels
         dbscan.core_sample_indices_ = findall(core_samples)
         dbscan.components_ = X[dbscan.core_sample_indices_, :]
@@ -108,7 +102,6 @@ function (dbscan::DBSCAN)(X::AbstractMatrix, y=nothing; sample_weight=nothing)
         
         return dbscan
     else
-        # Predicting or transforming
         if y === nothing
             return dbscan.labels_
         elseif y == :transform

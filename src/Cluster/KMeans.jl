@@ -38,11 +38,9 @@ mutable struct KMeans <: AbstractModel
 end
 
 function (kmeans::KMeans)(X::AbstractVecOrMat{Float64}, y=nothing; sample_weight=nothing)
-    # If X is a vector, convert it to a matrix
     X_matrix = X isa AbstractVector ? reshape(X, 1, :) : X
 
     if kmeans.cluster_centers_ === nothing
-        # Fitting
         n_samples, n_features = size(X_matrix)
         
         if kmeans.random_state !== nothing
@@ -94,7 +92,6 @@ function (kmeans::KMeans)(X::AbstractVecOrMat{Float64}, y=nothing; sample_weight
 
         return kmeans
     else
-        # Predicting
         return assign_labels(X_matrix, kmeans.cluster_centers_)
     end
 end
@@ -126,10 +123,8 @@ function kmeans_plus_plus(X::Matrix{Float64}, n_clusters::Int)
     n_samples, n_features = size(X)
     centroids = zeros(n_clusters, n_features)
     
-    # Choose the first centroid randomly
     centroids[1, :] = X[rand(1:n_samples), :]
     
-    # Choose the remaining centroids
     for k in 2:n_clusters
         distances = [minimum([norm(x - centroids[j, :])^2 for j in 1:k-1]) for x in eachrow(X)]
         probabilities = distances ./ sum(distances)
