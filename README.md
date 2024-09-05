@@ -38,9 +38,6 @@ X, y = load_iris(return_X_y=true)
 using NovaML.ModelSelection
 Xtrn, Xtst, ytrn, ytst = train_test_split(X, y, test_size=0.2)
 
-using NovaML.ModelSelection
-Xtrn, Xtst, ytrn, ytst = train_test_split(X, y, test_size=0.2)
-
 # Scale features
 using NovaML.PreProcessing
 scaler = StandardScaler()
