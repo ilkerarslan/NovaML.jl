@@ -28,9 +28,6 @@ makedocs(
         "API Reference" => "api.md",
         "Contributing" => "contribute.md",
     ],
-    strict = true,
-    checkdocs = :exports,
-    doctest = :fix
 )
 
 deploydocs(
