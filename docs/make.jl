@@ -2,7 +2,7 @@ using Documenter, NovaML
 
 makedocs(
     sitename = "NovaML.jl",
-    format = Documenter.HTML(),
+    format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     modules = [NovaML],
     pages = [
         "Home" => "index.md",
@@ -28,8 +28,10 @@ makedocs(
         "API Reference" => "api.md",
         "Contributing" => "contribute.md",
     ],
+    strict = true,
+    checkdocs = :exports,
+    doctest = :fix
 )
-
 
 deploydocs(
     repo = "github.com/ilkerarslan/NovaML.jl.git",
