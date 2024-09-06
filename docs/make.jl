@@ -32,4 +32,5 @@ makedocs(
 
 deploydocs(
     repo = "github.com/ilkerarslan/NovaML.jl.git",
+    devbranch = "master",
 )
