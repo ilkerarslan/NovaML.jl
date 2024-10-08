@@ -24,12 +24,11 @@ Following example load the Wisconsin Breast Cancer dataset, splits it to trainin
 using NovaML.Datasets: load_breast_cancer
 X, y = load_breast_cancer(return_X_y=true)
 
-using NovaML.ModelSelection: train_test_split
+using NovaML.ModelSelection
 Xtrn, Xtst, ytrn, ytst = train_test_split(X, y, test_size=0.2,
                                           stratify=y, random_state=1)
 
 using NovaML.LinearModel
-
 lr = LogisticRegression()
 
 # train the model
@@ -37,8 +36,11 @@ lr(Xtrn, ytrn)
 
 using NovaML.Metrics
 ŷtrn, ŷtst = lr(Xtrn), lr(Xtst)
-accuracy_score(ŷtrn, ytrn), accuracy_score(ŷtst, ytst)
-# 
+
+# training data accuracy
+accuracy_score(ŷtrn, ytrn)
+# test data accuracy
+accuracy_score(ŷtst, ytst) 
 ```
 
 ### Confusion Matrix
@@ -55,15 +57,19 @@ confmat = confusion_matrix(ytst, ŷtst)
 ```
 
 ```julia
-       1    2
-   ----------
-1 | 71.0  1.0
-2 |  5.0 37.0
+display_confusion_matrix(confmat)
+#        1    2
+#    ----------
+# 1 | 71.0  1.0
+# 2 |  5.0 37.0
 ```
 
 We can create a better looking confusion matrix plot using the following function:
 
 ```julia
+using Plots
+using Plots.PlotMeasures
+
 function plot_confusion_matrix(confmat::Matrix)
     n = size(confmat, 1)
     
@@ -100,7 +106,6 @@ plot_confusion_matrix(confmat)
 
 ![Confusion matrix plot](images/plot_1.svg)
 
-
 ### Precision, Recall, and F1 Score
 
 These metrics provide more detailed insights into model performance, especially for imbalanced datasets.
@@ -118,26 +123,111 @@ f1_score(ytst, ŷtst)
 
 ### Matthews Correlation Coefficient
 
-The Matthews Correlation Coefficient is a balanced measure for binary and multiclass classification problems.
+The Matthews Correlation Coefficient (MCC) is a balanced measure for binary classification problems. It takes into account true and false positives and negatives, providing a balanced measure even for classes of different sizes.
 
+$$MCC = \frac{TN \times TP - FN \times FP}{\sqrt{(TP+FP)(TP+FN)(TN+FP)(TN+FN)}}$$
+
+where
+
+- TP: True Positive
+- FP: False Positive
+- TN: True Negative
+- FN: False Negative
+
+MCC ranges from -1 to +1:
+
+- +1 represents a perfect prediction
+- 0 represents no better than random prediction
+- 1 indicates total disagreement between prediction and observation
+
+```julia
+using NovaML.Metrics
+matthews_corrcoef(ytst, ŷ)
+#0.8872442622820285
+```
 
 ### ROC Curve and AUC
 
 For binary classification problems, you can compute the Receiver Operating Characteristic (ROC) curve and the Area Under the Curve (AUC).
 
+```julia
+ŷprobs = lr(Xtst, type=:probs)[:, 2]
+fpr, tpr, _ = roc_curve(ytst, ŷprobs);
+# auc score
+roc_auc = auc(fpr, tpr)
+# 0.9923941798941799
+```
+
+We can also plot the receiver operating characteristic curve using `fpr` and `tpr` values.
+
+```julia
+plot(fpr, tpr, color=:blue, linestyle=:solid, 
+     label="Logistic Regression (auc = $(round(roc_auc, digits=2)))",
+     xlabel="False Positive",
+     ylabel="True Positive",
+     title="Receiver Operating Characteristic Curve")     
+plot!([0, 1], [0, 1], color=:gray, linestyle=:dash, linewidth=2, label="Random")
+```
+![ROC Curve](images/roc_curve.svg)
+
 ## Regression Metrics
+
+We will use the Boston Housing Data in the section. 
+
+First let's import and prepare the data. 
+
+```julia
+using NovaML.Datasets
+X, y = load_boston(return_X_y=true)
+```
+
+Prepare the training and test data sets.
+
+```julia
+using NovaML.ModelSelection
+Xtrn, Xtst, ytrn, ytst = train_test_split(X, y, test_size=0.3, random_state=123)
+```
+
+Create and fit the linear regression model.
+
+```julia
+lr = LinearRegression()
+lr(Xtrn, ytrn)
+ŷtrn = lr(Xtrn)
+ŷtst = lr(Xtst)
+```
 
 ### Mean Absolute Error (MAE)
 
 MAE measures the average magnitude of errors in a set of predictions, without considering their direction.
 
+```julia
+using NovaML.Metrics
+maetrn = mae(ytrn, ŷtrn)
+maetst = mae(ytst, ŷtst)
+maetrn, martst
+#(0.07, 0.09)
+```
 ### Mean Squared Error (MSE)
 
 MSE measures the average squared difference between the estimated values and the actual value.
 
+```julia
+msetrn = mse(ytrn, ŷtrn)
+msetst = mse(ytst, ŷtst)
+msetrn, msetst
+#(0.0093, 0.0128)
+```
 ### R-squared Score
 
 R-squared (R²) provides a measure of how well observed outcomes are replicated by the model, based on the proportion of total variation of outcomes explained by the model.
+
+```julia
+r2_score(ytrn, ŷtrn)
+# 0.9992871136620213
+r2_score(ytst, ŷtst)
+# 0.9991476060812577
+```
 
 ## Clustering Metrics
 
