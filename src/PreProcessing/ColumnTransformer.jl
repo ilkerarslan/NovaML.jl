@@ -2,20 +2,6 @@
 
 export ColumnTransformer
 
-"""
-    ColumnTransformer allows applying different transformations to different columns.
-    
-    Example:
-    ```julia
-    ct = ColumnTransformer([
-        ("num", StandardScaler(), [1, 2, 3]),
-        ("cat", OneHotEncoder(), ["gender", "country"])
-    ])
-    
-    # Fit and transform
-    X_transformed = ct(X)
-    ```
-"""
 mutable struct ColumnTransformer
     transformers::Vector{Tuple{String, Any, Union{Vector{Int}, Vector{String}}}}
     sparse::Bool
