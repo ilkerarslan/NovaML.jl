@@ -119,19 +119,39 @@ function (forest::RandomForestRegressor)(X::AbstractMatrix, y::AbstractVector)
     return forest
 end
 
-function (forest::RandomForestRegressor)(X::AbstractMatrix)
+# src/Ensemble/RandomForestClassifier.jl
+
+function (forest::RandomForestClassifier)(X::AbstractMatrix; type=nothing)
     if !forest.fitted
-        throw(ErrorException("This RandomForestRegressor instance is not fitted yet. Call the model with training data before using it for predictions."))
+        throw(ErrorException("This RandomForestClassifier instance is not fitted yet. Call the model with training data before using it for predictions."))
     end
 
     n_samples = size(X, 1)
-    predictions = zeros(n_samples)
+    
+    if type == :probs
+        # Initialize probability matrix (n_samples × n_classes)
+        probas = zeros(Float64, n_samples, forest.n_classes)
+        
+        # Get probability predictions from each tree and average them
+        for tree in forest.trees
+            tree_probs = tree(X, type=:probs)
+            probas .+= tree_probs
+        end
+        
+        # Normalize by number of trees to get final probabilities
+        probas ./= forest.n_estimators
+        
+        return probas
+    else
+        # Regular class predictions via majority voting
+        predictions = zeros(Int, n_samples, forest.n_estimators)
+        for (i, tree) in enumerate(forest.trees)
+            predictions[:, i] = tree(X)
+        end
 
-    for tree in forest.trees
-        predictions .+= tree(X)
+        # Majority voting
+        return [forest.classes[argmax(count(==(c), row) for c in forest.classes)] for row in eachrow(predictions)]
     end
-
-    return predictions ./ forest.n_estimators
 end
 
 function get_max_features(forest::RandomForestRegressor, n_features::Int)

@@ -23,6 +23,7 @@ mutable struct DecisionTreeClassifier <: AbstractModel
     classes::Vector
     fitted::Bool
     feature_importances_::Union{Vector{Float64}, Nothing}
+    n_features_::Int  # Add this field
 
     function DecisionTreeClassifier(;
         max_depth=nothing,
@@ -30,13 +31,16 @@ mutable struct DecisionTreeClassifier <: AbstractModel
         min_samples_leaf=1,
         random_state=nothing
     )
-        new(max_depth, min_samples_split, min_samples_leaf, random_state, nothing, 0, [], false, nothing)
+        new(max_depth, min_samples_split, min_samples_leaf, random_state, nothing, 0, [], false, nothing, 0)  # Initialize n_features_
     end
 end
 
 function (tree::DecisionTreeClassifier)(X::AbstractMatrix, y::AbstractVector; sample_weight=nothing)
     tree.classes = unique(y)
     tree.n_classes = length(tree.classes)
+    
+    # Store number of features
+    tree.n_features_ = size(X, 2)
     
     if tree.random_state !== nothing
         Random.seed!(tree.random_state)
@@ -191,8 +195,16 @@ function predict_sample(tree::DecisionTreeClassifier, node::Node, x::AbstractVec
 end
 
 function compute_feature_importances(tree::DecisionTreeClassifier)
-    n_features = length(tree.root.class_counts)
-    importances = zeros(Float64, n_features)
+    # Change this line to use the actual number of features from the node
+    n_features = size(tree.root.class_counts, 1)  # This was incorrect
+    
+    # Store n_features in the tree when fitting
+    if !hasfield(typeof(tree), :n_features_)
+        # Add n_features_ field to store number of features if not present
+        tree.n_features_ = 0  # This should be set during fitting
+    end
+    
+    importances = zeros(Float64, tree.n_features_)
     total_samples = sum(tree.root.class_counts)
 
     function traverse(node::Node, current_depth::Int)
