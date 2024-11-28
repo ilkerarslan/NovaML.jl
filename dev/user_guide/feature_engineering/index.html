@@ -58,22 +58,11 @@ importances = dt.feature_importances_
 # Print feature importances with their names
 for (name, importance) in zip(feature_names, importances)
     println(&quot;$name: $importance&quot;)
-end</code></pre><h2 id="Combining-Feature-Engineering-Steps"><a class="docs-heading-anchor" href="#Combining-Feature-Engineering-Steps">Combining Feature Engineering Steps</a><a id="Combining-Feature-Engineering-Steps-1"></a><a class="docs-heading-anchor-permalink" href="#Combining-Feature-Engineering-Steps" title="Permalink"></a></h2><p>You can combine multiple feature engineering steps using NovaML&#39;s pipeline functionality:</p><pre><code class="language-julia hljs">using NovaML.Pipelines
-using NovaML.PreProcessing
-
-# Create a pipeline that:
-# 1. Scales the numerical features
-# 2. Generates polynomial features
-# 3. Selects the most important features
-# 4. Trains a model
-pipe = pipe(
+end</code></pre><h2 id="Combining-Feature-Engineering-Steps"><a class="docs-heading-anchor" href="#Combining-Feature-Engineering-Steps">Combining Feature Engineering Steps</a><a id="Combining-Feature-Engineering-Steps-1"></a><a class="docs-heading-anchor-permalink" href="#Combining-Feature-Engineering-Steps" title="Permalink"></a></h2><p>You can combine multiple feature engineering steps using NovaML&#39;s pipeline functionality:</p><pre><code class="language-julia hljs">using NovaML.Pipelines: pipe
+p = pipe(
     StandardScaler(),
-    PolynomialFeatures(degree=2),
-    LogisticRegression()
-)
+    PCA(n_components=2),
+    LogisticRegression())
 
-# Fit the entire pipeline
-pipe(X_train, y_train)
-
-# Make predictions using the pipeline
-y_pred = pipe(X_test)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../model_evaluation/">« Model Evaluation</a><a class="docs-footer-nextpage" href="../pipelines/">Pipelines »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Thursday 28 November 2024 13:13">Thursday 28 November 2024</span>. Using Julia version 1.10.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+p(Xtrn, ytrn)
+ŷ = p(Xtst)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../model_evaluation/">« Model Evaluation</a><a class="docs-footer-nextpage" href="../pipelines/">Pipelines »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Thursday 28 November 2024 13:24">Thursday 28 November 2024</span>. Using Julia version 1.10.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
