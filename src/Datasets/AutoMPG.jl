@@ -1,4 +1,4 @@
-using Downloads
+using Downloads, Statistics
 
 function load_auto_mpg(; return_X_y=false)
     url = "https://archive.ics.uci.edu/ml/machine-learning-databases/auto-mpg/auto-mpg.data"
