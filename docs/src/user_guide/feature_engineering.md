@@ -118,23 +118,12 @@ end
 You can combine multiple feature engineering steps using NovaML's pipeline functionality:
 
 ```julia
-using NovaML.Pipelines
-using NovaML.PreProcessing
-
-# Create a pipeline that:
-# 1. Scales the numerical features
-# 2. Generates polynomial features
-# 3. Selects the most important features
-# 4. Trains a model
-pipe = pipe(
+using NovaML.Pipelines: pipe
+p = pipe(
     StandardScaler(),
-    PolynomialFeatures(degree=2),
-    LogisticRegression()
-)
+    PCA(n_components=2),
+    LogisticRegression())
 
-# Fit the entire pipeline
-pipe(X_train, y_train)
-
-# Make predictions using the pipeline
-y_pred = pipe(X_test)
+p(Xtrn, ytrn)
+ŷ = p(Xtst)
 ```
