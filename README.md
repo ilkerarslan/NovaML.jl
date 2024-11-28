@@ -77,6 +77,7 @@ println("Test accuracy: $acc_tst")
 
 ### Datasets
 
+- `load_auto_mpg`: Provides the Auto MPG dataset, a regression problem focused on predicting fuel efficiency. The dataset contains information about various automobiles from 1970-1982, featuring 7 characteristics including weight, horsepower, and acceleration, making it excellent for studying relationships between car attributes and fuel consumption.
 - `load_boston`: Loads the Boston Housing dataset, a classic regression problem. It contains information about housing in the Boston area, with 13 features and a target variable representing median home values.
 - `load_iris`: Provides access to the famous Iris flower dataset, useful for classification tasks. It includes 150 samples with 4 features each, categorized into 3 different species of Iris.
 - `load_breast_cancer`: Loads the Wisconsin Breast Cancer dataset, a binary classification problem. It contains features computed from digitized images of breast mass, with the goal of predicting whether a tumor is malignant or benign.
