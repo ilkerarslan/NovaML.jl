@@ -1,6 +1,6 @@
 name = "NovaML"
 uuid = "3f482e55-661e-4eec-8a53-436578a72954"
-authors = ["ilkerarslan <ilker.arslan@outlook.com> and contributors"]
+authors = ["ilkerarslan <ilker.arslan@outlook.com>"]
 version = "0.4.0"
 
 [deps]
