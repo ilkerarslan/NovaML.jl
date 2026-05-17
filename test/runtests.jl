@@ -137,4 +137,229 @@ using Test
         end
     end
 
+    @testset "GradientBoostingRegressor" begin
+        using NovaML.Ensemble: GradientBoostingRegressor
+        using Random
+
+        @testset "Constructor defaults" begin
+            gbr = GradientBoostingRegressor()
+            @test gbr.loss == "squared_error"
+            @test gbr.learning_rate == 0.1
+            @test gbr.n_estimators == 100
+            @test gbr.subsample == 1.0
+            @test gbr.max_depth == 3
+            @test gbr.alpha == 0.9
+            @test gbr.fitted == false
+        end
+
+        @testset "Constructor validation" begin
+            @test_throws ArgumentError GradientBoostingRegressor(loss="invalid")
+            @test_throws ArgumentError GradientBoostingRegressor(init="bad")
+            @test_throws ArgumentError GradientBoostingRegressor(learning_rate=0.0)
+            @test_throws ArgumentError GradientBoostingRegressor(learning_rate=1.5)
+            @test_throws ArgumentError GradientBoostingRegressor(n_estimators=0)
+            @test_throws ArgumentError GradientBoostingRegressor(subsample=0.0)
+            @test_throws ArgumentError GradientBoostingRegressor(subsample=1.5)
+            @test_throws ArgumentError GradientBoostingRegressor(validation_fraction=0.0)
+            @test_throws ArgumentError GradientBoostingRegressor(validation_fraction=1.0)
+            @test_throws ArgumentError GradientBoostingRegressor(alpha=0.0)
+            @test_throws ArgumentError GradientBoostingRegressor(alpha=1.0)
+            @test_throws ArgumentError GradientBoostingRegressor(min_samples_split=0.0)
+            @test_throws ArgumentError GradientBoostingRegressor(min_samples_split=1.5)
+            @test_throws ArgumentError GradientBoostingRegressor(min_samples_split=1)
+            @test_throws ArgumentError GradientBoostingRegressor(min_samples_leaf=0.0)
+            # NovaML caps float min_samples_leaf at 0.5 (values > 0.5 make splits impossible)
+            @test_throws ArgumentError GradientBoostingRegressor(min_samples_leaf=0.6)
+            @test_throws ArgumentError GradientBoostingRegressor(min_samples_leaf=0)
+        end
+
+        @testset "Fit and predict — squared_error" begin
+            Random.seed!(42)
+            X_train = randn(100, 3)
+            y_train = 2.0 .* X_train[:, 1] .+ 0.5 .* X_train[:, 2] .+ randn(100) .* 0.1
+
+            gbr = GradientBoostingRegressor(
+                n_estimators=50,
+                learning_rate=0.1,
+                max_depth=3,
+                random_state=42
+            )
+            gbr(X_train, y_train)
+
+            @test gbr.fitted == true
+            @test gbr.n_estimators_ == 50
+            @test length(gbr.estimators_) == 50
+            @test length(gbr.train_score_) == 50
+
+            # Train loss decreases over boosting rounds
+            @test gbr.train_score_[end] < gbr.train_score_[1]
+
+            # Predictions are numeric vector
+            preds = gbr(X_train)
+            @test length(preds) == 100
+            @test eltype(preds) <: AbstractFloat
+
+            # Feature importances
+            @test gbr.feature_importances_ !== nothing
+            @test length(gbr.feature_importances_) == 3
+            @test all(gbr.feature_importances_ .>= 0)
+        end
+
+        @testset "Fit and predict — absolute_error" begin
+            Random.seed!(123)
+            X_train = randn(80, 2)
+            y_train = 3.0 .* X_train[:, 1] .+ randn(80) .* 0.2
+
+            gbr = GradientBoostingRegressor(
+                loss="absolute_error",
+                n_estimators=30,
+                learning_rate=0.1,
+                max_depth=3,
+                random_state=123
+            )
+            gbr(X_train, y_train)
+
+            @test gbr.fitted == true
+            @test gbr.train_score_[end] < gbr.train_score_[1]
+
+            preds = gbr(X_train)
+            @test length(preds) == 80
+            @test eltype(preds) <: AbstractFloat
+        end
+
+        @testset "Fit and predict — huber" begin
+            Random.seed!(456)
+            X_train = randn(80, 2)
+            y_train = 1.5 .* X_train[:, 1] .- 0.5 .* X_train[:, 2] .+ randn(80) .* 0.3
+
+            gbr = GradientBoostingRegressor(
+                loss="huber",
+                alpha=0.9,
+                n_estimators=30,
+                learning_rate=0.1,
+                max_depth=3,
+                random_state=456
+            )
+            gbr(X_train, y_train)
+
+            @test gbr.fitted == true
+            @test gbr.train_score_[end] < gbr.train_score_[1]
+
+            preds = gbr(X_train)
+            @test length(preds) == 80
+            @test eltype(preds) <: AbstractFloat
+        end
+
+        @testset "Early stopping" begin
+            Random.seed!(789)
+            X_train = randn(200, 2)
+            y_train = X_train[:, 1] .+ randn(200) .* 0.1
+
+            gbr = GradientBoostingRegressor(
+                n_estimators=500,
+                learning_rate=0.5,
+                max_depth=3,
+                n_iter_no_change=10,
+                tol=1e-4,
+                validation_fraction=0.2,
+                random_state=789
+            )
+            gbr(X_train, y_train)
+
+            @test gbr.fitted == true
+            # Should stop before reaching 500 estimators
+            @test gbr.n_estimators_ < 500
+        end
+
+        @testset "Predict not fitted" begin
+            gbr = GradientBoostingRegressor()
+            @test_throws ErrorException gbr(randn(5, 2))
+        end
+
+        @testset "Subsample" begin
+            Random.seed!(101)
+            X_train = randn(100, 2)
+            y_train = X_train[:, 1] .+ X_train[:, 2] .+ randn(100) .* 0.1
+
+            gbr = GradientBoostingRegressor(
+                n_estimators=30,
+                subsample=0.8,
+                learning_rate=0.1,
+                max_depth=3,
+                random_state=101
+            )
+            gbr(X_train, y_train)
+
+            @test gbr.fitted == true
+            preds = gbr(X_train)
+            @test length(preds) == 100
+        end
+
+        @testset "Warm start continuation" begin
+            Random.seed!(202)
+            X_train = randn(100, 2)
+            y_train = X_train[:, 1] .+ X_train[:, 2] .+ randn(100) .* 0.1
+
+            gbr = GradientBoostingRegressor(
+                n_estimators=30,
+                learning_rate=0.1,
+                max_depth=3,
+                warm_start=true,
+                random_state=202
+            )
+            gbr(X_train, y_train)
+            @test gbr.fitted == true
+            @test length(gbr.estimators_) == 30
+
+            # Continue training with more estimators
+            gbr.n_estimators = 60
+            gbr(X_train, y_train)
+            @test length(gbr.estimators_) == 60
+            @test gbr.n_estimators_ == 60
+            @test length(gbr.train_score_) == 60
+        end
+
+        @testset "Warm start — lowering n_estimators errors" begin
+            Random.seed!(303)
+            X_train = randn(100, 2)
+            y_train = X_train[:, 1] .+ randn(100) .* 0.1
+
+            gbr = GradientBoostingRegressor(
+                n_estimators=30,
+                learning_rate=0.1,
+                max_depth=3,
+                warm_start=true,
+                random_state=303
+            )
+            gbr(X_train, y_train)
+            @test length(gbr.estimators_) == 30
+
+            # Lowering n_estimators with warm_start should throw
+            gbr.n_estimators = 20
+            @test_throws ArgumentError gbr(X_train, y_train)
+        end
+
+        @testset "Warm start — same n_estimators is no-op" begin
+            Random.seed!(404)
+            X_train = randn(100, 2)
+            y_train = X_train[:, 1] .+ randn(100) .* 0.1
+
+            gbr = GradientBoostingRegressor(
+                n_estimators=30,
+                learning_rate=0.1,
+                max_depth=3,
+                warm_start=true,
+                random_state=404
+            )
+            gbr(X_train, y_train)
+            preds1 = gbr(X_train)
+
+            # Re-fit with same n_estimators — should keep same estimators
+            gbr(X_train, y_train)
+            preds2 = gbr(X_train)
+            @test length(gbr.estimators_) == 30
+            @test preds1 == preds2
+        end
+    end
+
 end
